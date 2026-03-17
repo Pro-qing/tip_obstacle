@@ -1,0 +1,32 @@
+# 忽略 ROS 编译生成的文件夹
+autoware.ai/build/
+autoware.ai/devel/
+autoware.ai/install/
+autoware.ai/logs/
+.catkin_workspace
+.devel_layout
+
+# 忽略 Python 编译文件
+__pycache__/
+*.pyc
+
+# 忽略map文件
+MAPS/
+
+# 忽略其他
+logs/
+
+# 忽略所有 ROS 数据包和点云文件（无论在哪个目录下）
+*.bag
+*.pcd
+
+# 忽略所有 C++ 编译生成的二进制程序（刚才那个 53MB 的文件就是这个类型）
+# 它可以匹配类似 lio_sam_6axis_mapOptmization 这种没有后缀的可执行文件
+autoware.ai/install/
+**/lib/*/
+
+# 忽略仿真生成的临时数据
+*.pcd.bin
+*.ply
+.vscode/
+.idea/
