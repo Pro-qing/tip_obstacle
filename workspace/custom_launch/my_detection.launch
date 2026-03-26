@@ -1,0 +1,28 @@
+<launch>
+	
+	<!-- 补盲、前单线雷达标定融合、过滤 -->
+	<!-- <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/multi_points.launch"/>  -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/lidar_filtering.launch"/> 
+    
+	<!-- 叉尖雷达标定、融合 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/tip_obstacle.launch"/> 
+	
+	<!-- 车体自身感知 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/safe_obstacle.launch"/>
+
+	<!-- 点云聚类 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/lidar_euclidean_cluster_scan.launch"/>
+	
+	<!-- 聚类后感知 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/lidar_kf_contour_track.launch"/>
+
+	<!-- 电梯内控制感知  （可能修改） -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/elevator_safetybox.launch"/>
+
+	<!-- 叉尖停障距离处理 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/palletId_run.launch"/>
+
+	<!-- 电梯、库位内障碍物识别 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/perception/obstacle_detection.launch"/>
+
+</launch>

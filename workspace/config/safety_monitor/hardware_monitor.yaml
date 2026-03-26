@@ -1,0 +1,89 @@
+# 硬件监控配置文件
+# 格式版本: 1.0
+
+monitor_params:
+  update_interval: 2.0    # 硬件状态更新间隔(秒)
+  publish_interval: 0.5   # 状态发布间隔(秒)
+  ping_timeout: 0.5       # ping超时时间(秒)
+
+
+# USB设备监控配置
+usb:
+  - device: "/dev/ttyS0"        # 485设备
+    description: "light串口线"     # 建议与实际物理标签一致
+
+  - device: "/dev/imu"          # imu设备
+    description: "imu串口线"     # 建议与实际物理标签一致
+
+  - device: "/dev/floor"          # 梯控模块设备
+    description: "梯控模块串口线"     # 建议与实际物理标签一致
+
+# 网络设备监控配置
+net:
+  - ip: "192.168.86.1"         # 设备IP地址
+    description: "路由器"       # 网络设备功能描述（用于界面显示）
+    
+  - ip: "192.168.86.200"       # 补盲雷达
+    description: "补盲雷达"     # 型号建议补充（如：Hesai Pandar64）
+
+  - ip: "192.168.86.205"       # 顶头16线雷达
+    description: "顶头16线雷达"  # 型号建议补充（如：Hesai Pandar64）
+    
+  - ip: "192.168.86.201"       # 左前单线激光
+    description: "左前单线激光"  # 建议补充型号（如：Kvaser PCIEcan）
+
+  - ip: "192.168.86.202"       # 右前单线激光
+    description: "右前单线激光"  # 建议补充型号（如：Kvaser PCIEcan）
+    
+  - ip: "192.168.86.203"       # 左后单线激光
+    description: "左后单线激光"  # 建议补充型号（如：Kvaser PCIEcan）
+
+  - ip: "192.168.86.204"       # 右后单线激光
+    description: "右后单线激光"  # 建议补充型号（如：Kvaser PCIEcan）
+
+  - ip: "192.168.100.82"       # 相机
+    description: "相机"         # 建议补充型号（如：Kvaser PCIEcan）
+
+  - ip: "192.168.86.16"        # CAN盒
+    description: "CAN盒"         # 建议补充型号（如：Kvaser PCIEcan）
+
+  - ip: "192.168.86.15"         # CAN盒主机网口
+    description: "CAN盒主机网口"         # 建议补充型号（如：Kvaser PCIEcan）
+  
+
+# CAN盒设备监控配置
+can:
+  - topic: "can_box_raw"
+    type: "autoware_can_msgs/CANPacket"
+    device:
+      - id: "0x181"
+        description: "底盘-行走当前速度/电流"
+        timeout: 1.0
+
+      - id: "0x182"
+        description: "底盘-转向实际速度/位置"
+        timeout: 1.0
+
+      - id: "0x18FF28F4"
+        description: "电池"
+        timeout: 60.0
+
+
+# 配置说明 ---------------------------------------------------
+# 1. USB设备检测规则：
+#    - 设备节点必须存在于/dev目录
+#    - 检测频率：10Hz
+#
+# 2. 网络设备检测规则：
+#    - 使用ping检测连通性
+#    - 超时时间：1000ms
+#    - 重试次数：3次
+#
+# 3. 建议配置：
+#    - 关键设备建议配置冗余检测（如双CAN盒）
+#    - IP地址应与网络拓扑图保持一致
+#    - 描述字段建议包含设备型号信息
+#电流
+#    net:
+#      - ip: "192.168.1.50"
+#        description: "前视摄像头（海康MV-CA016-10GC）"

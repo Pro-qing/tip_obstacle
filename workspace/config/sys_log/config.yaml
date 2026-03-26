@@ -1,0 +1,131 @@
+
+# 日志根目录
+log_directory: "/home/roam/work/logs/rosSyslog"
+
+# 全局日志设置
+global_settings:
+  max_file_size: "1GB"  # 10MB (支持单位：B/KB/MB/GB)
+  max_backup_files: 3
+  compress_backups: true  # 压缩备份
+  # 全局过滤规则
+  filter_fields: [] 
+
+
+# 监控的话题列表
+monitored_topics:
+  - name: "/feedback_status"
+    message_type: "autoware_remove_msgs/State"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []
+    
+  - name: "/can_box_raw"
+    message_type: "autoware_can_msgs/CANPacket"
+    enabled: true
+    max_file_size: "2MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 32
+    compress_backups: true
+    filter_fields: 
+      - field: "/id: 419375348/"     # 使用正则表达式过滤所有以pose开头的字段
+        before: 1              # 保留匹配行之前的1行
+        after: 12               # 保留匹配行之后的2行
+
+  - name: "/can_box_cmd"
+    message_type: "autoware_can_msgs/CANPacket"
+    enabled: true
+    max_file_size: "2MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 64
+    compress_backups: true
+    filter_fields: 
+      - field: "/id: 769/"     # 使用正则表达式过滤所有以pose开头的字段
+        before: 1              # 保留匹配行之前的1行
+        after: 12               # 保留匹配行之后的2行
+      - field: "/id: 513/"     # 使用正则表达式过滤所有以pose开头的字段
+        before: 1              # 保留匹配行之前的1行
+        after: 12               # 保留匹配行之后的2行
+      
+
+  - name: "/monitor/topic_status_flags"
+    message_type: "std_msgs/UInt32MultiArray"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []  
+
+  - name: "/monitor/hardware_status_flags"
+    message_type: "std_msgs/UInt32MultiArray"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []  
+
+  - name: "/Path_to_RCS"
+    message_type: "autoware_msgs/RcsCmd"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []
+
+  - name: "/rcs_info"
+    message_type: "autoware_msgs/RcsInfo"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []
+
+  - name: "/vehicle_cmd"
+    message_type: "autoware_msgs/VehicleCmd"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []
+
+  - name: "/mqttJson_cmd"
+    message_type: "std_msgs/String"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []
+
+
+  - name: "/mqttJson_info"
+    message_type: "std_msgs/String"
+    enabled: true
+    max_file_size: "10MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 8
+    compress_backups: true
+    filter_fields: []
+    
+  - name: "/vehicle_cmd_smooth"
+    message_type: "autoware_msgs/VehicleCmd"
+    enabled: true
+    max_file_size: "5MB"  # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 16
+    compress_backups: true
+    filter_fields: []
+
+# 过滤例子
+
+# 1.话题特定的过滤规则（会覆盖全局规则）
+# filter_fields:             
+#   - field: "header"        # 过滤header字段
+#     before: 2              # 保留匹配行之前的2行
+#     after: 1               # 保留匹配行之后的1行
+#   - field: "/speed.*/"     # 使用正则表达式过滤所有以pose开头的字段
+#     before: 1              # 保留匹配行之前的1行
+#     after: 2               # 保留匹配行之后的2行
+    
+# 2.不使用过滤
+# filter_fields: []
+
+# 3.使用全局过滤规则
+# filter_fields: null
+

@@ -30,19 +30,20 @@ tf_calibration:
   right_pitch: 0.0
   right_roll: 3.1415926
   # 左后单线
-  bleft_x: 0.0
-  bleft_y: 0.0
-  bleft_z: 0.0
-  bleft_yaw: 0.0
+  bleft_x: -1.50
+  bleft_y: -0.24
+  bleft_z: -1.2
+  bleft_yaw: 3.1415926
   bleft_pitch: 0.0
   bleft_roll: 0.0
   # 右后单线
-  bright_x: 0.0
-  bright_y: 0.0
-  bright_z: 0.0
-  bright_yaw: 0.0
+  bright_x: -1.50
+  bright_y: 0.36
+  bright_z: -1.2
+  bright_yaw: 3.1415926
   bright_pitch: 0.0
   bright_roll: 0.0
+
   
   
   

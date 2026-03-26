@@ -1,0 +1,41 @@
+<launch>
+    <!-- LQR控制 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/control/lqr_control.launch"/> 
+    
+    <!-- 楼层控制 -->
+    <include file="$(find ctrlo_floor)/launch/ctrlo_floor.launch"/> 
+
+
+    <arg name="wheel_base" default="2.0" /><!-- 轮距-->
+    <arg name="lateral_accel_limit" default="5.0" />								   <!-- 横向加速度限制 -->
+    <arg name="lateral_jerk_limit" default="5.0" />										<!-- 横向冲击极限 -->
+    <arg name="lowpass_gain_linear_x" default="0.0" />							<!-- 低通增益线性 x -->
+    <arg name="lowpass_gain_angular_z" default="0.0" />						 <!-- 低通增益角 z -->
+    <arg name="lowpass_gain_steering_angle" default="0.0" />
+	<include file="$(find twist_filter)/launch/twist_filter.launch">
+        <!-- For twist_filter -->
+        <arg name="wheel_base" value="$(arg wheel_base)" />                                                <!-- 轮距-->
+        <arg name="lateral_accel_limit" value="$(arg lateral_accel_limit)" />								   <!-- 横向加速度限制 -->
+        <arg name="lateral_jerk_limit" value="$(arg lateral_jerk_limit)" />										<!-- 横向冲击极限 -->
+        <arg name="lowpass_gain_linear_x" value="$(arg lowpass_gain_linear_x)" />							<!-- 低通增益线性 x -->
+        <arg name="lowpass_gain_angular_z" value="$(arg lowpass_gain_angular_z)" />						 <!-- 低通增益角 z -->
+        <arg name="lowpass_gain_steering_angle" value="$(arg lowpass_gain_steering_angle)" />			<!-- 低通增益转向角 -->
+
+        <param name="vehicle_info/wheel_base" value="$(arg wheel_base)" />
+        <arg name="use_sensor_data_filter" value="false" />
+
+        <!-- For twist_gate -->
+        <arg name="loop_rate" value="30.0" />
+        <arg name="use_decision_maker" value="false" />							<!-- 使用决策者 -->
+	</include>
+
+    <!-- 速度平滑 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/control/curvature_calculator.launch"/>
+
+    <!-- 抬升控制 -->
+    <include file="$(find prong_vertical)/launch/prong_vertical.launch"/>
+    
+    <!-- 托盘识别控制 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/control/pallet_control.launch"/>
+
+</launch>

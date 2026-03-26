@@ -1,0 +1,18 @@
+<launch>
+  <arg name="device_ip" default="192.168.86.201"/>
+  <arg name="node_name" default="rplidarNode" />
+	<arg name="scan_topic" default="/scan" />
+	<arg name="frame_id" default="laser" />
+	<arg name="min_distance" default="0.05" />
+  <node name="$(arg node_name)"          pkg="rplidar_ros"  type="rplidarNode"   respawn="true"  output="screen">
+	  <param name="channel_type"        type="string" value="udp"/>  
+	  <param name="udp_ip"              type="string" value="$(arg device_ip)"/>  
+	  <param name="frame_id" value="$(arg frame_id)"/>                     #激光坐标
+	  <param name="inverted"            type="bool"   value="false"/>
+	  <param name="angle_compensate"    type="bool"   value="true"/>
+	  <param name="scan_mode"           type="string" value="Sensitivity"/>
+	  <param name="scan_frequency"      type="int"    value="10"/>
+	  <param name="min_distance"      type="double"    value="$(arg min_distance)"/>
+	<remap from="/scan" to="$(arg scan_topic)"/>
+  </node>
+</launch>

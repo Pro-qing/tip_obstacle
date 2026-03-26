@@ -1,0 +1,4 @@
+<launch>
+    <!--参数设置-->
+    <rosparam file="$(env HOME)/work/PARAM/GlobalParam.yaml" command="load"/>
+</launch>

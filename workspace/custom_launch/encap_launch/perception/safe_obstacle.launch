@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="safe_obstacle" name="safe_obstacle_node" type="safe_obstacle_node" output="screen">
+        <rosparam file="$(env HOME)/work/workspace/config/perception/safe_obstacle.yaml" command="load"/>
+        <!-- <remap from="points_raw" to="points_mid" />   -->
+    </node>
+</launch>

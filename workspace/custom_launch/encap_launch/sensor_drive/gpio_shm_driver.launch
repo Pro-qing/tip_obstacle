@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="gpio_shm_driver" name="gpio_read" type="main"   respawn="true"  output="screen" >
+        <param name="config_file" value="$(env HOME)/work/workspace/config/sensor/gpio_config.yaml" />
+    </node>
+</launch>

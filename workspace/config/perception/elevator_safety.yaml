@@ -1,0 +1,66 @@
+
+# input_topic: "/points_nonground"
+input_topic: "/points_mid"
+output_topic: "/filtered_cloud_elevator"
+
+
+
+
+min_x: -3.55
+max_x: 2.55
+min_y: -0.75
+max_y: 0.75
+min_z: -1.60
+max_z: 0.50
+
+
+car_rect:
+  - {x: 0.16, y: -0.10}
+  - {x: 0.16, y: -0.30}
+  - {x: 0.10, y: -0.43}
+  - {x: -0.20, y: -0.48}
+  - {x: -0.22, y: -0.53}
+  - {x: -1.66, y: -0.53}
+  - {x: -1.66, y: 0.53}
+  - {x: -0.22, y: 0.53}
+  - {x: -0.20, y: 0.48}
+  - {x: 0.10, y: 0.43}
+  - {x: 0.16, y: 0.30}
+  - {x: 0.16, y: 0.10}
+car_min_z: -1.60
+car_max_z: 0.50
+
+
+intensity_rect:
+  - {x: 0.35, y: -0.10}
+  - {x: 0.25, y: -0.10}
+  - {x: 0.25, y: 0.10}
+  - {x: 0.35, y: 0.10}
+intensity_min_z: -1.10
+intensity_max_z: -0.70
+intensity_min: 0.0
+intensity_max: 200.0
+
+
+eval_rect:
+  - {x: 0.45, y: -0.55}
+  - {x: 0.15, y: -0.63}
+  - {x: -0.12, y: -0.63}
+  - {x: -0.12, y: -0.63}
+  - {x: -1.86, y: -0.63}
+  - {x: -1.86, y: 0.63}
+  - {x: -0.12, y: 0.63}
+  - {x: -0.12, y: 0.63}
+  - {x: 0.15, y: 0.63}
+  - {x: 0.45, y: 0.55}
+eval_min_z: -1.60
+eval_max_z: 0.50
+
+
+
+
+# 滤波参数
+statistical_meanK: 20
+statistical_stddev: 1.0
+radius_radius: 0.15
+radius_min_neighbors: 6

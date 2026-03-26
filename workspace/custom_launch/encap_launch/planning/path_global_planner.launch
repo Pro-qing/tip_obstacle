@@ -1,0 +1,18 @@
+<launch>
+    <node pkg="path_planning" name="global_path_node" type="global_path_node" output="screen">
+        <param name="fix_dis" value="0.5" />
+        <param name="endPoint_clear" value="true" />
+        <param name="keep_dis" value="1.8"/>
+    </node>
+    <!-- <node pkg="path_planning" name="path_planning_pub" type="pub.py" >
+    </node> -->
+    <node pkg="path_planning" type="path_planner" name="path_planner" output="screen">
+        <!-- txt的目录-->
+        <!--  日志文件夹logs --> 
+        <param name="log_dir" value="$(env HOME)/work/logs/path_planning" />
+        <remap from="/Path_to_RCS" to="/Path_to_RCS_raw"/>
+
+        <!-- <param name="maps_dir" value="/home/roam/work/MAPS/load" /> -->
+        <!-- <param name="maps_dir" value="/home/ant/文档/maps-sim" />  -->
+    </node>
+</launch>

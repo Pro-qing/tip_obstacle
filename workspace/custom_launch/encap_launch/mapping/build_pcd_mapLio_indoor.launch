@@ -1,0 +1,18 @@
+<launch>
+
+  <arg name="use_gps" default="false"/><!--是否使用GPS-->
+  <arg name="filt" default="0.1"/>地图降采样
+
+
+    <include file="$(find startingup_ros)/data/Common/custom_launch/my_param.launch" />
+    <include file="$(find startingup_ros)/data/Common/custom_launch/my_sensing.launch" />
+
+  <include file="$(find lio_sam_6axis)/launch/run.launch">
+    <arg name="useGPS" default="$(arg use_gps)"/><!--是否使用GPS-->
+    <arg name="filt" value="$(arg filt)"/>地图降采样
+  </include>
+
+
+
+
+</launch>

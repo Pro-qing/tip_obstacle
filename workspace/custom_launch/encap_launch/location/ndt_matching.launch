@@ -1,0 +1,71 @@
+<launch>
+
+  <arg name="method_type" default="0" /> <!-- pcl_generic=0, pcl_anh=1, pcl_anh_gpu=2, pcl_openmp=3 -->
+  <arg name="use_gnss" default="0" />
+  <arg name="use_odom" default="true" />
+  <arg name="use_imu" default="false" />
+  <arg name="imu_upside_down" default="false" />
+  <arg name="imu_topic" default="/imu_raw" />
+  <arg name="queue_size" default="1" />
+  <arg name="offset" default="linear" />
+  <arg name="get_height" default="0" />
+  <arg name="use_local_transform" default="false" />
+  <arg name="sync" default="false" />
+  <arg name="output_log_data" default="false" />
+  <arg name="gnss_reinit_fitness" default="1.0" />
+    <arg name="gps_topic" default="/resived_pose" />
+
+   <arg name="use_indoor" default="true" />
+
+
+<!--初始化gnss位置-->
+  <arg name="init_pos_gnss" default="1" />   
+  
+
+<!-- /config/voxel_grid_filter -->
+  <node pkg="rostopic" type="rostopic" name="config_voxel_grid_filter"
+		    args="pub -l /config/voxel_grid_filter autoware_config_msgs/ConfigVoxelGridFilter
+          '{voxel_leaf_size: 1.0,
+          measurement_range: 60.0}' "
+    />
+
+    <!-- ndt_matching -->
+  <node pkg="rostopic" type="rostopic" name="config_ndt_matching"
+		    args="pub -l /config/ndt autoware_config_msgs/ConfigNDT
+          '{header: auto,
+            init_pos_gnss: $(arg init_pos_gnss),
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+            roll: 0.0,
+            pitch: 0.0,
+            yaw: 0.0,
+            use_predict_pose: 0,
+            error_threshold: 1.0,
+            resolution: 1.5,
+            step_size: 0.10000000149,
+            trans_epsilon: 0.00999999977648,
+            max_iterations: 30}' "
+  />
+
+  <node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching" output="log">
+    <rosparam file="$(env HOME)/work/workspace/param/ndt_init_pose.yaml" command="load" />
+    <param name="method_type" value="$(arg method_type)" />
+    <param name="use_gnss" value="$(arg use_gnss)" />
+    <param name="use_odom" value="$(arg use_odom)" />
+    <param name="use_imu" value="$(arg use_imu)" />
+    <param name="imu_upside_down" value="$(arg imu_upside_down)" />
+    <param name="imu_topic" value="$(arg imu_topic)" />
+    <param name="queue_size" value="$(arg queue_size)" />
+    <param name="offset" value="$(arg offset)" />
+    <param name="get_height" value="$(arg get_height)" />
+    <param name="use_local_transform" value="$(arg use_local_transform)" />
+    <param name="output_log_data" value="$(arg output_log_data)" />
+    <param name="gnss_reinit_fitness" value="$(arg gnss_reinit_fitness)" />
+    <param name="use_indoor" value="$(arg use_indoor)" />
+    <remap from="/points_raw" to="/sync_drivers/points_raw" if="$(arg sync)" />
+    <remap from="/gnss_pose" to="$(arg gps_topic)"/>
+  </node>
+
+
+</launch>

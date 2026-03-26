@@ -1,0 +1,75 @@
+<launch>
+    <!-- 16线激光雷达 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/rslidar.launch"/> 
+
+     <!--补盲雷达-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/msg_MID360.launch"/> 
+
+    <!--右前单线雷达-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/rplidar_s2e.launch"> 
+      <arg name="node_name" value="lslidar_driver_node" />
+      <arg name="device_ip" value="192.168.89.201"/>
+      <arg name="scan_topic" value="/scan_left" />
+      <arg name="frame_id" value="laser_left" />
+      <arg name="min_distance" value="0.05" />
+    </include>
+
+    <!--左前单线雷达-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/rplidar_s2e.launch"> 
+      <arg name="node_name" value="lslidar_driver_node2" />
+      <arg name="device_ip" value="192.168.86.202"/>
+      <arg name="scan_topic" value="/scan_right" />
+      <arg name="frame_id" value="laser_right" />
+      <arg name="min_distance" value="0.05" />
+    </include>
+
+    <!-- <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/free_lidar.launch"> 
+        <arg name="scan_topic" value="/scan_left"/>
+        <arg name="frame_id" value="laser_left"/>
+        <arg name="node_name" value="lslidar_driver_node"/>
+        <arg name="device_ip" value="192.168.89.201"/>
+    </include>
+
+        <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/free_lidar.launch"> 
+        <arg name="scan_topic" value="/scan_right"/>
+        <arg name="frame_id" value="laser_right"/>
+        <arg name="node_name" value="lslidar_driver_node2"/>
+        <arg name="device_ip" value="192.168.86.202"/>
+    </include> -->
+
+    <!--左后单线雷达-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/lslidar_net.launch"> 
+        <arg name="node_name" value="lslidar_driver_node3" />
+        <arg name="device_ip" value="192.168.86.203" />
+        <arg name="device_port" value="2374" />
+        <arg name="difop_port" value="2375" />
+        <arg name="frame_id" value="laser_bleft" />
+        <arg name="scan_topic" value="scan_bleft" />
+    </include>
+
+    <!--右后单线雷达-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/lslidar_net.launch"> 
+        <arg name="node_name" value="lslidar_driver_node4" />
+        <arg name="device_ip" value="192.168.86.204" />
+        <arg name="device_port" value="2376" />
+        <arg name="difop_port" value="2377" />
+        <arg name="frame_id" value="laser_bright" />
+        <arg name="scan_topic" value="scan_bright" />
+    </include>
+
+    <!--IMU驱动-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/gps_imu_driver.launch"/> 
+
+    <!--GPIO驱动  读取共享内存，需要自启时启动底层驱动-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/gpio_shm_driver.launch"/>
+
+    <!--CAN驱动-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/socketcan_rem.launch"/> 
+
+    <!--底盘驱动-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/can_vehicle.launch"/> 
+
+    <!--电梯控制-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/elevator_run.launch"/>
+
+</launch>

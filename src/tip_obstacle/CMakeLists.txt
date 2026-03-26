@@ -15,8 +15,12 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_msgs
   pcl_ros
   laser_geometry
+  autoware_remove_msgs
   tf
 )
+
+# 单独引入系统库 yaml-cpp 
+find_package(yaml-cpp REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/tip_obstacle.cfg
@@ -71,9 +75,10 @@ add_dependencies(tip_obstacle_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_
 add_dependencies(tip_obstacle_node ${PROJECT_NAME}_gencfg)
 target_link_libraries(tip_obstacle_node
   ${catkin_LIBRARIES}
+  yaml-cpp
+  pthread
   # ${PCL_LIBRARIES}
 )
-
 
 
 #3 头文件,                   (PATH: install/include/slam_karto/)

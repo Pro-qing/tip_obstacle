@@ -1,0 +1,21 @@
+<launch>
+    <!-- 定义是否启动UI的参数，默认启动 -->
+    <arg name="launch_ui" default="false" doc="是否启动监控界面界面"/>
+    
+    <!-- 硬件监控节点 -->
+    <!-- 所有参数配置在 params/hardware_monitor.yaml 中 -->
+    <node pkg="safety_protection" type="hardware_monitor.py" name="hardware_monitor" output="screen">
+    </node>
+    
+    <!-- 话题监控节点 -->
+    <!-- 所有参数配置在 params/topic_monitor.yaml 中 -->
+    <node pkg="safety_protection" type="topic_monitor.py" name="topic_monitor" output="screen">
+    </node>
+    <!-- 数据监控节点 -->
+    <!-- <node pkg="safety_protection" type="data_monitor.py" name="data_monitor" output="screen"/> -->
+    
+    <!-- 根据参数条件启动UI -->
+    <group if="$(arg launch_ui)">
+        <include file="$(find safety_protection)/launch/monitor_ui.launch"/>
+    </group>
+</launch>

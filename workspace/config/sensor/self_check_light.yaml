@@ -1,0 +1,172 @@
+usb_devices:
+  - name: "Light"
+    bit_position: 0
+    is_critical: true
+  - name: "IMU"
+    bit_position: 1
+    is_critical: true
+  - name: "Elevator"
+    bit_position: 2
+    is_critical: true
+
+net_devices:
+  - name: "Router"                              #路由器
+    bit_position: 0
+    is_critical: true
+  - name: "BSD Radar"                           #补盲雷达
+    bit_position: 1
+    is_critical: true
+  - name: "16-line LiDAR"                       #顶头16线雷达
+    bit_position: 2
+    is_critical: true
+  - name: "Front-Left Single-line LiDAR"        #左前单线激光
+    bit_position: 3
+    is_critical: true
+  - name: "Front-Right Single-line LiDAR"       #右前单线激光
+    bit_position: 4
+    is_critical: true
+  - name: "Rear-Left Single-line LiDAR"         #左后单线激光
+    bit_position: 5
+    is_critical: true
+  - name: "Rear-Right Single-line LiDAR"        #右后单线激光
+    bit_position: 6
+    is_critical: true
+  - name: "Camera"                              #相机
+    bit_position: 7
+    is_critical: true
+  - name: "CAN"                              #CAN
+    bit_position: 8
+    is_critical: true
+
+
+can_devices:
+  - name: "0x181"
+    bit_position: 0
+    is_critical: true
+  - name: "0x182"
+    bit_position: 1
+    is_critical: true
+  - name: "0x18FF28F4"                          #电池
+    bit_position: 2
+    is_critical: true
+
+topics:
+  - name: "/vehicle_cmd"
+    bit_position: 0
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning"
+
+  - name: "/points_raw"
+    bit_position: 2
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning"
+
+  - name: "/scan_bleft"
+    bit_position: 3
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/scan_bright"
+    bit_position: 4
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/scan_left"
+    bit_position: 5
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/scan_right"
+    bit_position: 6
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/points_16"
+    bit_position: 7
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/points_mid"
+    bit_position: 8
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/pointstartup_time_s_tip"
+    bit_position: 9
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/can_box_raw"
+    bit_position: 10
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/tip_dis"
+    bit_position: 11
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/tracked_objects"
+    bit_position: 12
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/points_filter"
+    bit_position: 13
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/imu_raw"                              # ？
+    bit_position: 14
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+
+  - name: "/vehicle_cmd_smooth"                  # ？
+    bit_position: 15
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/odom_pose"                  # ？
+    bit_position: 16                     # ？
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+
+  - name: "/ndt_pose"                  # ？
+    bit_position: 17                     # ？
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 

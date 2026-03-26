@@ -1,97 +1,57 @@
 <?xml version="1.0"?>
 <launch>
     <!-- 话题参数 -->
-    <arg name="tip_type" default="1" />     <!-- 1:单叉臂-->
+    <arg name="tip_type" default="0" />     <!-- 1:单叉臂   0:双叉臂 -->
     <arg name="parent_frame" default="velodyne" />
-    <arg name="child_frame" default="laser" />
-    <arg name="out_points_cloud" default="points_tip" />
+    <arg name="left_child_frame" default="bleft_laser" />
+    <arg name="right_child_frame" default="bright_laser" />
     <arg name="out_fused_points_cloud" default="fused_points_tip" />
+    <!-- 【新增】：左右雷达独立转换到 velodyne 的话题 -->
+    <arg name="out_bleft_points_cloud" default="bleft_points_tip" />
+    <arg name="out_bright_points_cloud" default="bright_points_tip" />
 
-
-    <!-- 坐标标定 -->
-    <arg name="left_x" default="0.0" />
-    <arg name="left_y" default="0" />
-    <arg name="left_z" default="0.0" />
-    <arg name="left_yaw" default="0.0" />
-    <arg name="left_pitch" default="0.0" />
-    <arg name="left_roll" default="0.0" />
-
-    <arg name="right_x" default="0.00" />
-    <arg name="right_y" default="0.60" />
-    <arg name="right_z" default="0.0" />
-    <arg name="right_yaw" default="0.0" />
-    <arg name="right_pitch" default="0.0" />
-    <arg name="right_roll" default="0.0" />
-
-
-    <arg name="fused_x" default="-1.50" />
-    <arg name="fused_y" default="0.24" />
-    <arg name="fused_z" default="-1.20" />
-    <arg name="fused_yaw" default="3.1615926" />
-    <arg name="fused_pitch" default="0.0" />
-    <arg name="fused_roll" default="0.00" />
-
-
-
+    <!-- yaml文件路径 -->
+    <arg name="yaml_path_tf" default="/home/ros_ws/workspace/param/lidar_calibration.yaml" />
+    <arg name="yaml_path_carport" default="/home/ros_ws/workspace/config/perception/obstacle_detection.yaml" />
+    
     <!-- 过滤参数 -->
-    <!-- <arg name="left_filter_enable" default="1" />
-    <arg name="left_min_angle" default="210.0" />
-    <arg name="left_max_angle" default="150.0" />
-    <arg name="right_filter_enable" default="1" />
-    <arg name="right_min_angle" default="210.0" />
-    <arg name="right_max_angle" default="150.0" /> -->
+    <arg name="debug" default="false" />
 
     <arg name="left_filter_enable" default="1" />
     <arg name="left_min_angle" default="30.0" />
     <arg name="left_max_angle" default="340.0" />
-    <arg name="left_min_y" default="0.50" />       <!-- 左叉臂y轴过滤范围 -->
-    <arg name="left_max_y" default="-0.00" />       <!-- 左叉臂y轴过滤范围 -->
+    <arg name="left_min_y" default="0.50" />
+    <arg name="left_max_y" default="-0.00" />
     <arg name="right_filter_enable" default="1" />
     <arg name="right_min_angle" default="30.0" />
     <arg name="right_max_angle" default="330.0" />
-    <arg name="right_min_y" default="0.00" />       <!-- 右叉臂y轴过滤范围 -->
-    <arg name="right_max_y" default="-0.50" />       <!-- 右叉臂y轴过滤范围 -->
+    <arg name="right_min_y" default="0.00" />
+    <arg name="right_max_y" default="-0.50" />
 
     <arg name="pallet_id_left_filter_enable" default="1" />
     <arg name="pallet_id_left_min_angle" default="15.0" />
     <arg name="pallet_id_left_max_angle" default="355.0" />
-    <arg name="pallet_id_left_min_y" default="0.50" />       <!-- 左叉臂y轴过滤范围 -->    
-    <arg name="pallet_id_left_max_y" default="-0.00" />       <!-- 左叉臂y轴过滤范围 -->    
+    <arg name="pallet_id_left_min_y" default="0.50" />          
+    <arg name="pallet_id_left_max_y" default="-0.00" />           
     <arg name="pallet_id_right_filter_enable" default="1" />
     <arg name="pallet_id_right_min_angle" default="15.0" />
     <arg name="pallet_id_right_max_angle" default="350.0" />
-    <arg name="pallet_id_right_min_y" default="0.00" />       <!-- 右叉臂y轴过滤范围 -->    
-    <arg name="pallet_id_right_max_y" default="-0.50" />       <!-- 右叉臂y轴过滤范围 -->        
+    <arg name="pallet_id_right_min_y" default="0.00" />          
+    <arg name="pallet_id_right_max_y" default="-0.50" />               
 
     <node pkg="tip_obstacle" name="tip_obstacle_node" type="tip_obstacle_node"  output="screen" >
         <param name="tip_type" value="$(arg tip_type)" />
         <param name="parent_frame" value="$(arg parent_frame)" />
-        <param name="out_points_cloud" value="$(arg out_points_cloud)" />
-        <param name="out_fused_points_cloud" value="$(arg  out_fused_points_cloud)" />
+        <param name="left_child_frame" value="$(arg left_child_frame)" />
+        <param name="right_child_frame" value="$(arg right_child_frame)" />
+        <param name="out_fused_points_cloud" value="$(arg out_fused_points_cloud)" />
+        <!-- 【新增】：将参数传给节点 -->
+        <param name="out_bleft_points_cloud" value="$(arg out_bleft_points_cloud)" />
+        <param name="out_bright_points_cloud" value="$(arg out_bright_points_cloud)" />
        
-        <!-- 坐标标定 -->
-        <param name="left_x" value="$(arg left_x)" />
-        <param name="left_y" value="$(arg left_y)" />
-        <param name="left_z" value="$(arg left_z)" />
-        <param name="left_yaw" value="$(arg left_yaw)" />
-        <param name="left_pitch" value="$(arg left_pitch)" />
-        <param name="left_roll" value="$(arg left_roll)" />
+        <!-- 过滤参数导入节点 -->
+        <param name="debug" value="$(arg debug)" />
 
-        <param name="right_x" value="$(arg right_x)" />
-        <param name="right_y" value="$(arg right_y)" />
-        <param name="right_z" value="$(arg right_z)" />
-        <param name="right_yaw" value="$(arg right_yaw)" />
-        <param name="right_pitch" value="$(arg right_pitch)" />
-        <param name="right_roll" value="$(arg right_roll)" />
-
-        <param name="fused_x" value="$(arg fused_x)" />
-        <param name="fused_y" value="$(arg fused_y)" />
-        <param name="fused_z" value="$(arg fused_z)" />
-        <param name="fused_yaw" value="$(arg fused_yaw)" />
-        <param name="fused_pitch" value="$(arg fused_pitch)" />
-        <param name="fused_roll" value="$(arg fused_roll)" />
-
-        <!-- 过滤参数 -->
         <param name="left_filter_enable" value="$(arg left_filter_enable)" />
         <param name="left_min_angle" value="$(arg left_min_angle)" />
         <param name="left_max_angle" value="$(arg left_max_angle)" />
@@ -102,7 +62,7 @@
         <param name="right_max_angle" value="$(arg right_max_angle)" />
         <param name="right_min_y" value="$(arg right_min_y)" />
         <param name="right_max_y" value="$(arg right_max_y)" />
-        <!-- 到过滤参数 -->
+
         <param name="pallet_id_left_filter_enable" value="$(arg pallet_id_left_filter_enable)" />
         <param name="pallet_id_left_min_angle" value="$(arg pallet_id_left_min_angle)" />
         <param name="pallet_id_left_max_angle" value="$(arg pallet_id_left_max_angle)" />
@@ -113,11 +73,5 @@
         <param name="pallet_id_right_max_angle" value="$(arg pallet_id_right_max_angle)" />
         <param name="pallet_id_right_min_y" value="$(arg pallet_id_right_min_y)" />
         <param name="pallet_id_right_max_y" value="$(arg pallet_id_right_max_y)" />
-        <remap from="points_mid" to="points_raw" /> 
     </node>
 </launch>
-
-
-
-
-

@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="type" default="3" />
+    <!-- 话题参数 -->
+    <arg name="parent_frame" default="velodyne" />
+    <arg name="out_points_cloud" default="points_raw" />
+    <arg name="filter_out_points_cloud" default="points_filter" />
+    <!-- 坐标标定 -->
+    <arg name="main_x" default="0.1" />
+    <arg name="main_y" default="0.02" />
+    <arg name="main_z" default="-0.30" />
+    <arg name="main_yaw" default="-0.02" />
+    <arg name="main_pitch" default="0.20" />
+    <arg name="main_roll" default="3.1415926" />
+
+    <arg name="left_x" default="0.10" />
+    <arg name="left_y" default="0.34" />
+    <arg name="left_z" default="-1.00" />
+    <arg name="left_yaw" default="1.063" />
+    <arg name="left_pitch" default="3.1415926" />
+    <arg name="left_roll" default="0.0" />
+
+    <arg name="right_x" default="0.17" />
+    <arg name="right_y" default="-0.34" />
+    <arg name="right_z" default="-1.00" />
+    <arg name="right_yaw" default="-0.965" />
+    <arg name="right_pitch" default="3.1415926" />
+    <arg name="right_roll" default="0.0" />
+
+    <arg name="top_x" default="0" />
+    <arg name="top_y" default="0" />
+    <arg name="top_z" default="0" />
+    <arg name="top_yaw" default="0.0" />
+    <arg name="top_pitch" default="0.0" />
+    <arg name="top_roll" default="0.0" />
+
+    <!-- 过滤参数 -->
+    <arg name="main_filter_enable" default="0" />
+    <arg name="main_min_angle" default="0.0" />
+    <arg name="main_max_angle" default="0.0" />
+    <arg name="left_filter_enable" default="1" />
+    <arg name="left_min_angle" default="295.0" />
+    <arg name="left_max_angle" default="70.0" />
+    <arg name="left_max_dis" default="2.0" />
+    <arg name="right_filter_enable" default="1" />
+    <arg name="right_min_angle" default="295.0" />
+    <arg name="right_max_angle" default="70.0" />
+    <arg name="right_max_dis" default="2.0" />
+    <arg name="top_filter_enable" default="1" />
+    <arg name="top_min_angle" default="0.0" />
+    <arg name="top_max_angle" default="0.0" />
+
+    <!-- 最大限制距离，与速度有关，小于最大速度时生效 需要使能过滤-->
+    <arg name="maxSpeed" default="1.2" />
+    <arg name="maxLimitDis_speed" default="0.3" />
+    <arg name="leftLimit_min_angle" default="300.0" />
+    <arg name="leftLimit_max_angle" default="190.0" />
+    <arg name="rightLimit_min_angle" default="180.0" />
+    <arg name="rightLimit_max_angle" default="66.0" />
+
+    <node pkg="multi_points" name="multi_points" type="multi_points"  output="screen" >
+        <rosparam file="$(env HOME)/work/workspace/config/perception/filter.yaml" command="load"/>
+        <param name="parent_frame" value="$(arg parent_frame)" />
+        <param name="filter_out_points_cloud" value="$(arg filter_out_points_cloud)" />
+        <param name="out_points_cloud" value="$(arg out_points_cloud)" />
+        <!-- 坐标标定 -->
+        <param name="main_x" value="$(arg main_x)" />
+        <param name="main_y" value="$(arg main_y)" />
+        <param name="main_z" value="$(arg main_z)" />
+        <param name="main_yaw" value="$(arg main_yaw)" />
+        <param name="main_pitch" value="$(arg main_pitch)" />
+        <param name="main_roll" value="$(arg main_roll)" />
+
+        <param name="left_x" value="$(arg left_x)" />
+        <param name="left_y" value="$(arg left_y)" />
+        <param name="left_z" value="$(arg left_z)" />
+        <param name="left_yaw" value="$(arg left_yaw)" />
+        <param name="left_pitch" value="$(arg left_pitch)" />
+        <param name="left_roll" value="$(arg left_roll)" />
+
+        <param name="right_x" value="$(arg right_x)" />
+        <param name="right_y" value="$(arg right_y)" />
+        <param name="right_z" value="$(arg right_z)" />
+        <param name="right_yaw" value="$(arg right_yaw)" />
+        <param name="right_pitch" value="$(arg right_pitch)" />
+        <param name="right_roll" value="$(arg right_roll)" />
+
+        <param name="top_x" value="$(arg top_x)" />
+        <param name="top_y" value="$(arg top_y)" />
+        <param name="top_z" value="$(arg top_z)" />
+        <param name="top_yaw" value="$(arg top_yaw)" />
+        <param name="top_pitch" value="$(arg top_pitch)" />
+        <param name="top_roll" value="$(arg top_roll)" />
+
+        <!-- 过滤参数 -->
+        <param name="main_filter_enable" value="$(arg main_filter_enable)" />
+        <param name="main_min_angle" value="$(arg main_min_angle)" />
+        <param name="main_max_angle" value="$(arg main_max_angle)" />
+        <param name="left_filter_enable" value="$(arg left_filter_enable)" />
+        <param name="left_min_angle" value="$(arg left_min_angle)" />
+        <param name="left_max_angle" value="$(arg left_max_angle)" />
+        <param name="left_max_dis" value="$(arg left_max_dis)" />
+        <param name="right_filter_enable" value="$(arg right_filter_enable)" />
+        <param name="right_min_angle" value="$(arg right_min_angle)" />
+        <param name="right_max_angle" value="$(arg right_max_angle)" />
+        <param name="right_max_dis" value="$(arg right_max_dis)" />
+        <param name="top_filter_enable" value="$(arg top_filter_enable)" />
+        <param name="top_min_angle" value="$(arg top_min_angle)" />
+        <param name="top_max_angle" value="$(arg top_max_angle)" />
+        <param name="type" value="$(arg type)" />
+
+        <param name="maxSpeed" value="$(arg maxSpeed)" />
+        <param name="maxLimitDis_speed" value="$(arg maxLimitDis_speed)" />
+        <param name="leftLimit_min_angle" value="$(arg leftLimit_min_angle)" />
+        <param name="leftLimit_max_angle" value="$(arg leftLimit_max_angle)" />
+        <param name="rightLimit_min_angle" value="$(arg rightLimit_min_angle)" />
+        <param name="rightLimit_max_angle" value="$(arg rightLimit_max_angle)" />
+
+
+        <!-- <remap from="points_mid" to="points_raw" />  -->
+    </node>
+</launch>

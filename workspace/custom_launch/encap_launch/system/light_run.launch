@@ -1,0 +1,15 @@
+<launch>
+
+    <node pkg="light_control" type="car_state_processor" name="carstateprocessor" output="screen">
+        <param name="boot_time_ms" value="150000"/>
+        <param name="config_file" value="$(env HOME)/work/workspace/config/sensor/self_check_light.yaml" />
+    </node>   
+
+    <node pkg="light_control" type="light_subscriber" name="lightsub" output="screen">
+        <param name="serial_port" value="/dev/ttyS1"/>
+        <param name="baud_rate" value="115200"/>
+        <param name="device_address" value="0"/>
+    </node>
+
+
+</launch>

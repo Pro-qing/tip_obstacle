@@ -1,0 +1,57 @@
+# 数据监控配置文件
+# 格式版本: 1.0
+
+# 监控话题配置列表
+topics:
+  # 第一个监控话题组配置
+  - topic:             # 需要监控的ROS话题列表（支持多个话题联合监控）
+      - "/vehicle_cmd" # 控制命令话题（发布控制指令）
+      - "/can_info"    # CAN信息反馈话题（接收实际状态）
+    
+    msg_type:          # 对应话题的消息类型（必须与topic顺序一致）
+      - "autoware_msgs/VehicleCmd"    # 控制命令消息类型
+      - "autoware_can_msgs/CANInfo"   # CAN反馈消息类型
+    
+    # 控制变量监控配置
+    control_vars:
+      # 变量2：转向角监控
+      - control_var: "ctrl_cmd.steering_angle"   # 控制指令中的转向角
+        feedback_var: "angle"                    # 实际测量的转向角
+        error_threshold: 0.05    # 角度误差阈值（单位：弧度）
+        timeout: 5.0             # 超时检测时间
+        description: "方向角控制"
+        
+range_monitors:   
+  - topic: "/fix"          # 监控话题
+    msg_type: "sensor_msgs/NavSatFix"      # 消息类型
+    field_path: "status.status"         # 字段路径
+    valid_range:                      # 有效范围（多区间并集）
+      - [ 0.5, 10 ]                # 低温区间
+    timeout: 1.0                     # 超时时间
+    description: "RTK定位状态"
+
+# 配置说明 ---------------------------------------------------
+# 1. 消息路径规则：
+#    - 使用点号访问嵌套字段，如 "header.stamp.secs"
+#    - 数组索引使用方括号，如 "wheels[0].speed"
+#
+# 2. 阈值配置建议：
+#    - 线速度误差：0.1~0.5 m/s
+#    - 转向角误差：0.05~0.1 rad
+#    - 超时时间：根据实际控制频率设置（通常1-3秒）
+#
+# 3. 示例配置：
+#    control_vars:
+#      - control_var: "brake_cmd.pressure"
+#        feedback_var: "brake_pressure"
+#        error_threshold: 5.0   # 单位：kPa
+#        timeout: 1.5
+#
+#      - control_var: "gear_cmd.position"
+#        feedback_var: "current_gear"
+#        error_threshold: 0     # 离散值需完全匹配
+#        timeout: 3.0
+#
+# 4. 特殊值处理：
+#    - error_threshold设为-1时禁用误差检查
+#    - timeout设为0时禁用超时检测

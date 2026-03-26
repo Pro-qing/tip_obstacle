@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="frame_id" default="/laser"/>
+  <arg name="scan_topic" default="scan"/>
+  <arg name="node_name" default="free_lidar_node"/>
+  
+  <arg name="scanner_type" default="c2"/>
+  <arg name="device_ip" default="192.168.86.202"/>
+  <arg name="port_name" default="/dev/ttyUSB0"/>
+  <arg name="scan_frequency" default="30"/>
+  <arg name="scan_resolution" default="3333"/>
+  <arg name="start_angle" default="-45"/>
+  <arg name="stop_angle" default="225"/>
+  <arg name="offset_angle" default="-90"/>
+  <arg name="range_min" default="0.05"/>
+  <arg name="range_max" default="25"/>
+  <arg name="filter_switch" default="true"/>
+  <arg name="is_ethernet" default="true"/>
+  <!-- Free Lidar -->
+  <node pkg="free_lidar" type="free_lidar_node" name="$(arg node_name)" respawn="true" output="screen">
+    <param name="frame_id" type="string" value="$(arg frame_id)"/>
+    <param name="scan_topic" type="string" value="$(arg scan_topic)"/>
+    <param name="scanner_type" type="string" value="$(arg scanner_type)"/>
+    <param name="scanner_ip" type="string" value="$(arg device_ip)"/>
+    <param name="port_name" type="string" value="$(arg port_name)"/>
+    <param name="scan_frequency" type="int" value="$(arg scan_frequency)"/>
+    <param name="scan_resolution" type="int" value="$(arg scan_resolution)"/>
+    <param name="start_angle" type="int" value="$(arg start_angle)"/>
+    <param name="stop_angle" type="int" value="$(arg stop_angle)"/>
+    <param name="range_max"  value="$(arg range_max)"/>
+    <param name="range_min" value="$(arg range_min)"/>
+    <param name="offset_angle" type="int" value="$(arg offset_angle)"/>
+    <param name="filter_switch" type="bool" value="$(arg filter_switch)"/>
+    <param name="is_ethernet" type="bool" value="$(arg is_ethernet)"/>  </node>
+
+  <!-- RVIZ -->
+  <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find free_lidar)/rviz/free_lidar.rviz" required="true" /> -->
+
+</launch>

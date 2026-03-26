@@ -1,0 +1,21 @@
+<launch>
+
+  <arg name="use_gps" default="false"/><!--是否使用GPS-->
+  <arg name="filt" default="0.1"/><!--地图降采样-->
+
+  <!-- 16线激光雷达 -->
+  <include file="$(find rslidar_sdk)/launch/start.launch"/>
+  <!-- <include file="$(find imu_serial)/launch/imu_serial.launch"/> -->
+    <include file="$(find gps_imu_driver)/launch/gps_imu_driver.launch"/> 
+
+
+  <include file="$(find lio_sam_6axis)/launch/run.launch">
+    <arg name="useGPS" default="$(arg use_gps)"/><!--是否使用GPS-->
+    <arg name="filt" value="$(arg filt)"/><!--地图降采样-->
+    <arg name="mapPath" value="/home/roam/work/MAPS"/>
+  </include>
+
+
+
+
+</launch>

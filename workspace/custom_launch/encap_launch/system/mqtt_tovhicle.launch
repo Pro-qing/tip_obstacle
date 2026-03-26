@@ -1,0 +1,41 @@
+<!-- -->
+<launch>
+
+  <arg name="SERVER_IP" default="lgf.uunat.com" />
+  <arg name="SERVER_PORT" default="8084" />
+  <arg name="ACCOUNT" default="rcs" />
+  <arg name="PASSW" default="rcs!@#123" />
+  <arg name="node_name" default="mqtt_tovhicle_node" />
+
+  <arg name="logdebug" default="true" />
+  <arg name="logpath" default="/home/roam/work/logs/mqtt" />
+
+  <!-- <arg name="SERVER_IP" default="127.0.0.1" />
+  <arg name="SERVER_PORT" default="1883" />
+  <arg name="ACCOUNT" default="anita" />
+  <arg name="PASSW" default="anita" />
+  <arg name="node_name" default="mqtt_tovhicle_node" /> -->
+
+  <!-- <arg name="accountPath" default="$(find mqtt_tovhicle)/param/roam_account.yaml" />
+  <arg name="paramPath" default="$(find mqtt_tovhicle)/param/roam_param.yaml" /> -->
+
+  <arg name="vehicle_id" default="ARL-H-XX-Antrange-03" /><!--车辆编码-->
+  <arg name="scenic_id" default="3" /><!--景区编号-->
+  <arg name="software_id" default="v1.0" /><!--版本号-->
+  <node pkg="mqtt_tovhicle" type="mqtt_tovhicle_node" name="$(arg node_name)"  output="screen">
+      <param name="SERVER_IP" type="str" value="$(arg SERVER_IP)"/>
+      <param name="SERVER_PORT" type="str" value="$(arg SERVER_PORT)"/>
+      <param name="ACCOUNT" type="str" value="$(arg ACCOUNT)"/>
+      <param name="PASSW" type="str" value="$(arg PASSW)"/>
+
+      <param name="vehicle_id" type="str" value="$(arg vehicle_id)"/>
+      <param name="scenic_id" type="int" value="$(arg scenic_id)"/>
+      <param name="software_id" type="str" value="$(arg software_id)"/>
+
+      <param name="logdebug" type="bool" value="$(arg logdebug)"/>
+      <param name="logpath" type="str" value="$(arg logpath)"/>
+      <!-- <param name="accountPath" type="str" value="$(arg accountPath)"/>
+      <param name="paramPath" type="str" value="$(arg paramPath)"/> -->
+  </node>
+
+</launch>

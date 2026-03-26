@@ -1,0 +1,12 @@
+<launch>
+    <node pkg="path_planning" name="op_local_selector_node" type="op_local_selector_node" output="screen">
+        <param name="maxVelocity" value="5.0" />
+        <param name="minVelocity" value="2.0" />
+        <!-- 检测到障碍物多远开始跟随减速 -->
+        <param name="minDistanceToAvoid" value="12.0" />
+        <!-- 线路上有障碍物时停车距离（跟随 -->
+        <param name="maxDistanceToAvoid" value="1.5" />
+        <param name="stopDistance" value="4.5" />
+
+    </node>
+</launch>

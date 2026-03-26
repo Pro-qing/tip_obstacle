@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+     <arg name="can_num" default="0"/>
+     <arg name="can_rate" default="250"/><!--波特率-->
+     <arg name="host_paw" default="1"/><!--本机root密码-->
+     <node  name="socketcan_rem_node" pkg="socketcan" type="socketcan_rem_node" output="log">
+
+        <param name="can_num" type="int" value ="$(arg can_num)"/>
+        <param name="can_rate" type="int" value ="$(arg can_rate)"/>
+        <param name="host_paw" type="string" value ="$(arg host_paw)"/>
+      </node>
+</launch>
+

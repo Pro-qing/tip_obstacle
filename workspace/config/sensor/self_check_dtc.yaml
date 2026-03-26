@@ -1,0 +1,261 @@
+usb_devices:
+  - name: "Light"
+    bit_position: 0
+    is_critical: true
+    dtc_code: "H3000"
+
+  - name: "IMU"
+    bit_position: 1
+    is_critical: true
+    dtc_code: "E0000"
+
+net_devices:
+  - name: "Router"                              #路由器
+    bit_position: 0
+    is_critical: true
+    dtc_code: "C0001"
+
+  - name: "BSD Radar"                           #补盲雷达
+    bit_position: 1
+    is_critical: true
+    dtc_code: "I2001"
+
+  - name: "16-line LiDAR"                       #顶头16线雷达
+    bit_position: 2
+    is_critical: true
+    dtc_code: "I1001"
+
+  - name: "Front-Left Single-line LiDAR"        #左前单线激光
+    bit_position: 3
+    is_critical: true
+    dtc_code: "I3001"
+  - name: "Front-Right Single-line LiDAR"       #右前单线激光
+    bit_position: 4
+    is_critical: true
+    dtc_code: "I4001"
+  - name: "Rear-Left Single-line LiDAR"         #左后单线激光
+    bit_position: 5
+    is_critical: true
+    dtc_code: "I5001"
+  - name: "Rear-Right Single-line LiDAR"        #右后单线激光
+    bit_position: 6
+    is_critical: true
+    dtc_code: "I6001"
+  - name: "Camera"                              #相机
+    bit_position: 7
+    is_critical: true
+    dtc_code: "D0001"
+
+  - name: "CAN"                              #CAN盒
+    bit_position: 8
+    is_critical: true
+    dtc_code: "J0001"
+
+
+can_devices:
+  - name: "0x181"                               #行走控制器
+    bit_position: 0
+    is_critical: true
+    dtc_code: "H1002"
+  - name: "0x182"
+    bit_position: 1
+    is_critical: true
+    dtc_code: "H2002"
+  - name: "0x18FF28F4"                          #电池
+    bit_position: 2
+    is_critical: true
+    dtc_code: "B0002"
+
+
+topics:
+  - name: "/vehicle_cmd"                         #自动驾驶控制话题数据
+    bit_position: 0
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning"
+    dtc_types: 
+      timeout: "H9999"
+      critical_fps: "H9999"
+      warning_fps: "H9999"
+          
+
+  - name: "/points_raw"                           #雷达融合后话题数据
+    bit_position: 2
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning"
+    dtc_types: 
+      timeout: "I8203"
+      critical_fps: "I8204"
+      warning_fps: "I8205"
+
+  - name: "/scan_bleft"                           #左后单线雷达话题数据
+    bit_position: 3
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "I5103"
+      critical_fps: "I5104"
+      warning_fps: "I5105"
+
+  - name: "/scan_bright"                          #右后单线雷达话题数据
+    bit_position: 4
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:       
+      timeout: "I6103"
+      critical_fps: "I6104"
+      warning_fps: "I6105"
+
+  - name: "/scan_left"                            #左前单线雷达话题数据
+    bit_position: 5
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "I3103"
+      critical_fps: "I3104"
+      warning_fps: "I3105"
+
+
+  - name: "/scan_right"                           #右前单线雷达话题数据
+    bit_position: 6
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "I4103"
+      critical_fps: "I4104"
+      warning_fps: "I4105"
+
+  - name: "/points_16"                            #顶16线雷达话题数据
+    bit_position: 7
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "I1103"
+      critical_fps: "I1104"
+      warning_fps: "I1105"
+
+  - name: "/points_mid"                           #补盲雷达话题数据
+    bit_position: 8
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "I2103"
+      critical_fps: "I2104"
+      warning_fps: "I2105"
+
+  - name: "/pointstartup_time_s_tip"              #叉尖融合后雷达话题数据   
+    bit_position: 9
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "I7203"
+      critical_fps: "I7204"
+      warning_fps: "I7205"
+
+  - name: "/can_box_raw"                          #can原始话题数据
+    bit_position: 10
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types: 
+      timeout: "J0103"
+      critical_fps: "J0104"
+      warning_fps: "J0105"
+
+  - name: "/tip_dis"                              #叉尖障碍物距离话题数据
+    bit_position: 11
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:  
+      timeout: "I7603"
+      critical_fps: "I7604"
+      warning_fps: "I7605"
+
+  - name: "/tracked_objects"                      #感知障碍物话题数据
+    bit_position: 12
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:   
+      timeout: "I8503"
+      critical_fps: "I8504"
+      warning_fps: "I8505"
+
+
+  - name: "/points_filter"                        #过滤后雷达话题数据
+    bit_position: 13
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:   
+      timeout: "I8303"
+      critical_fps: "I8304"
+      warning_fps: "I8305"
+
+  - name: "/imu_raw"                              #imu话题数据
+    bit_position: 14
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:       
+      timeout: "E0103"
+      critical_fps: "E0104"
+      warning_fps: "E0105"
+
+
+  - name: "/vehicle_cmd_smooth"                   #平滑后控制
+    bit_position: 15
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:       
+      timeout: "H1403"
+      critical_fps: "H1404"
+      warning_fps: "H1405"
+
+
+  - name: "/odom_pose"                   #卡尔曼融合定位坐标
+    bit_position: 16
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:       
+      timeout: "K1203"
+      critical_fps: "K1204"
+      warning_fps: "K1205"
+
+  - name: "/ndt_pose"                   #ndt定位坐标
+    bit_position: 17
+    error_types:
+      timeout: "Communication Timeout"
+      critical_fps: "Critical Low Frame Rate"
+      warning_fps: "Frame Rate Warning" 
+    dtc_types:       
+      timeout: "K2103"
+      critical_fps: "K2104"
+      warning_fps: "K2105"

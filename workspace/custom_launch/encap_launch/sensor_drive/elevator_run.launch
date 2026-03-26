@@ -1,0 +1,14 @@
+<launch>
+    <node pkg="elevator_control" type="elevator_control" name="elevator_control" output="screen">
+        <param name="serial" value="/dev/floor"/>
+        <param name="rate" value="115200" />
+<!-- 115200 -->
+        <!--重试次数-->
+        <param name="retry_max" value="2" /> 
+               
+        <param name="elevator_group" value="0" />
+        <param name="elevator_id" value="1" />
+
+        <rosparam command="load" file="$(env HOME)/work/workspace/config/sensor/floor_door_mapping.yaml" />
+    </node>   
+</launch>

@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     git \
     vim \
     tree \
+    ros-noetic-jsk-recognition-msgs \
     && rm -rf /var/lib/apt/lists/*
 
 # 4. 设置工作空间

@@ -1,0 +1,28 @@
+<launch>
+	<!-- <param name="use_sim_time" value="true"/> -->
+	<!-- <arg name="path_pcd" default="$(find startingup_ros)/data/Common/map/pointcloud_map/"/> -->
+	<arg name="path_pcd" default="$(env HOME)/work/MAPS/pointcloud_map/"/>
+	<arg name="map_dir" default="$(find startingup_ros)/data/Common/map/vector_map/"/>
+
+  	<!-- TF -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/world_tf.launch"/>
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/sensor_drive/sensor_tf.launch"/>
+
+	<!-- Point Cloud -->
+	<include file="$(find map_file)/launch/points_map_loader.launch">
+	    <!-- <arg name="scene_num" value="noupdate"/> -->
+	    <arg name="scene_num" value="transdate"/>
+	    <arg name="path_area_list" value="None"/>
+	    <arg name="transform_file" value="$(env HOME)/work/MAPS/pointcloud_map/map_transforms.yaml"/>
+	    <arg name="path_pcd" value="$(arg path_pcd)"/>
+	</include>
+	
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/location/load_keymaps.launch"/> 
+
+	<!-- Vector Map -->
+	<node pkg="map_file" type="vector_map_loader" name="vector_map_loader" output="screen">
+		<param name="load_mode" value="directory" />
+		<param name="map_dir" value="$(arg map_dir)" />
+	</node>
+
+</launch>

@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="local_task_bridge" name="local_task_bridge_node" type="local_task_bridge_node"  output="screen">
+
+    </node>
+</launch>

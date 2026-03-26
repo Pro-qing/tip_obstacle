@@ -1,0 +1,143 @@
+# 话题监控配置文件
+# 格式版本: 1.0
+monitor_params:
+  publish_interval: 0.5   # 状态发布间隔(秒)
+  window_size: 200         # 滑动窗口大小，用于平滑帧率检测结果
+
+# 监控话题列表
+topics:
+  - topic: "/vehicle_cmd"                         # 车辆控制指令
+    type: "autoware_msgs/VehicleCmd"           
+    warning_frame_rate: 24    
+    wrong_frame_rate: 15
+    timeout: 1.0
+
+  - topic: "/twist_raw"                           # 控制指令
+    type: "geometry_msgs/TwistStamped"        
+    warning_frame_rate: 24     
+    wrong_frame_rate: 15
+    timeout: 1.0
+
+  - topic: "/points_raw"                          # 点云原始数据
+    type: "sensor_msgs/PointCloud2"           
+    warning_frame_rate: 5     
+    wrong_frame_rate: 4
+    timeout: 1.0
+
+  - topic: "/scan_bleft"                          # 左后单线雷达话题数据
+    type: "sensor_msgs/LaserScan"       
+    warning_frame_rate: 6     
+    wrong_frame_rate: 5
+    timeout: 1.0
+
+
+  - topic: "/scan_bright"                          # 右后单线雷达话题数据
+    type: "sensor_msgs/LaserScan"              
+    warning_frame_rate: 6     
+    wrong_frame_rate: 5
+    timeout: 1.0
+
+
+  - topic: "/scan_left"                            # 左前单线雷达话题数据
+    type: "sensor_msgs/LaserScan"             
+    warning_frame_rate: 6     
+    wrong_frame_rate: 5
+    timeout: 1.0
+
+
+  - topic: "/scan_right"                           # 右前单线雷达话题数据
+    type: "sensor_msgs/LaserScan"              
+    warning_frame_rate: 6     
+    wrong_frame_rate: 5
+    timeout: 1.0
+
+  - topic: "/points_16"                            # 顶16线雷达话题数据
+    type: "sensor_msgs/PointCloud2"     
+    warning_frame_rate: 6     
+    wrong_frame_rate: 5
+    timeout: 1.0
+
+  - topic: "/points_mid"                           # 补盲雷达话题数据
+    type: "sensor_msgs/PointCloud2"       
+    warning_frame_rate: 8     
+    wrong_frame_rate: 5
+    timeout: 1.0
+
+  - topic: "/points_tip"                           # 叉尖融合后雷达话题数据
+    type: "sensor_msgs/PointCloud2"        
+    warning_frame_rate: 6     
+    wrong_frame_rate: 4
+    timeout: 1.0
+
+
+  - topic: "/can_box_raw"                          # can原始话题数据
+    type: "autoware_can_msgs/CANPacket"        
+    warning_frame_rate: 200    
+    wrong_frame_rate: 150
+    timeout: 1.5
+
+  - topic: "/tip_dis"                              # 叉尖障碍物距离话题数据
+    type: "std_msgs/Float32"              
+    warning_frame_rate: 6     
+    wrong_frame_rate: 4
+    timeout: 1.5
+
+  - topic: "/tracked_objects"                      # 感知障碍物话题数据
+    type: "autoware_msgs/DetectedObjectArray"     
+    warning_frame_rate: 4     
+    wrong_frame_rate: 3
+    timeout: 1.5
+
+  - topic: "/points_filter"                        # 过滤后雷达话题数据
+    type: "sensor_msgs/PointCloud2"     
+    warning_frame_rate: 4     
+    wrong_frame_rate: 3
+    timeout: 1.0    
+
+  - topic: "/imu_raw"                              # imu话题数据
+    type: "sensor_msgs/Imu"                   
+    warning_frame_rate: 80     
+    wrong_frame_rate: 50
+    timeout: 1.0   
+
+  - topic: "/vehicle_cmd_smooth"                   # 平滑后控制
+    type: "autoware_msgs/VehicleCmd"       
+    warning_frame_rate: 24     
+    wrong_frame_rate: 15
+    timeout: 1.0  
+    
+  - topic: "/odom_pose"                            # 卡尔曼定位数据
+    type: "geometry_msgs/PoseStamped"       
+    warning_frame_rate: 80     
+    wrong_frame_rate: 50
+    timeout: 1.0  
+
+  - topic: "/ndt_pose"                             # ndt定位数据
+    type: "geometry_msgs/PoseStamped"           
+    warning_frame_rate: 7     
+    wrong_frame_rate: 5
+    timeout: 1.0  
+
+
+
+
+# 配置说明 ---------------------------------------------------
+# 1. 帧率阈值设置原则：
+#    - warning_frame_rate = 正常帧率 × 0.8
+#    - wrong_frame_rate = 正常帧率 × 0.5
+#
+# 2. 超时时间设置建议：
+#    - 控制类话题：≤1.0秒
+#    - 感知类话题：≤1.5秒
+#    - 定位类话题：≤1.0秒
+#
+# 3. 特殊话题配置示例：
+#    - topic: "/camera/image_raw"
+#      type: "sensor_msgs/Image"
+#      warning_frame_rate: 24   # 对应30fps相机
+#      wrong_frame_rate: 15
+#      timeout: 1.0
+#0.5
+# 4. 注意事项：
+#    - 消息类型必须与实际使用的消息完全一致
+#    - 需要确保对应消息包已正确安装

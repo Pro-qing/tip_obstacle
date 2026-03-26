@@ -1,0 +1,53 @@
+<launch>
+
+	<include file="$(find autoware_connector)/launch/vel_pose_connect.launch">
+		<arg name="topic_pose_stamped" value="/odom_pose"/>
+		<arg name="topic_twist_stamped" value="/fused_estimate_twist"/>
+		<arg name="sim_mode" value="False"/>
+	</include>
+
+	<!-- 全局规划分割 -->
+  	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/planning/path_global_planner.launch"/> 
+  	
+	<!-- 多楼层规划 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/planning/floor_planner.launch"/> 
+
+	<!-- 局部规划生成 -->
+  	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/planning/op_local_generator.launch"/> 
+  	
+	<!-- 局部规划选择、路线速度 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/planning/op_local_selector.launch"/> 
+
+
+
+	<include file="$(find op_local_planner)/launch/op_motion_predictor.launch">
+		<arg name="max_distance_to_lane" value="2"/>							<!-- 最大距离到车道 -->
+		<arg name="prediction_distance" value="25"/>								<!-- 预测距离 -->
+		<arg name="distanceBetweenCurbs"   value="1.5" />					  <!-- 路缘之间的距离 -->
+		<arg name="visualizationTime"     value="0.25" />                          <!-- 可视化时间-->
+
+		<arg name="enableCurbObstacles" value="True"/>							 <!-- 启用路边障碍物 -->
+		<arg name="enableGenrateBranches" value="False"/>					 <!-- 启用生成分支 -->
+		<arg name="enableStepByStepSignal" value="False"/>                    <!-- 启用步进信号(sim)-->
+		<arg name="enableParticleFilterPrediction" value="False"/>         <!-- 启用粒子过滤器预测 -->
+
+	</include>
+
+
+	<node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" /> 
+
+
+	<arg name="horizontalSafetyDistance"   default="0.4" />  						
+	<!-- 左右安全距离 -->
+	<arg name="verticalSafetyDistance"     default="1.0" />								
+	<!-- 前后安全距离 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/planning/op_trajectory_evaluator.launch">
+		<arg name="enablePrediction" value="false"/>
+		<arg name="horizontalSafetyDistance"   value="$(arg horizontalSafetyDistance)" />  						
+		<!-- 左右安全距离 -->
+		<arg name="verticalSafetyDistance"     value="$(arg verticalSafetyDistance)" />								
+		<!-- 前后安全距离 -->
+	</include>
+
+
+</launch>

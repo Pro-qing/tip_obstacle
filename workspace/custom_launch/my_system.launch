@@ -1,0 +1,29 @@
+<launch>
+    <!-- 车辆、任务状态 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/state_handle.launch"/> 
+    
+    <!-- mqtt数据上报获取 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/mqtt_tovhicle.launch"/>
+
+    <!-- 任务桥接-->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/local_task_bridge.launch"/> 
+
+    <!-- 安全状态检测，直接用于控制 -->
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/vehicle_safety_monitor.launch"/>
+
+    <!-- 安全检测，发布状态 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/monitor_run.launch"/>
+
+    <!-- 灯光提醒 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/light_run.launch"/>
+
+    <!-- 语音提示 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/horn_run.launch"/>
+
+    <!-- 系统报错 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/dtc_run.launch"/>
+
+    <!-- 系统日志 -->
+    <include file="$(env HOME)/work/workspace/custom_launch/encap_launch/system/log_run.launch"/>
+
+</launch>

@@ -1,0 +1,14 @@
+<launch>
+
+    <!-- ​同步使能, 写日志时强制磁盘同步, 影响性能, 但能确保数据不会因系统崩溃而丢失-->
+    <arg name="sync_enable" default="false" /> 
+
+    <node pkg="log_management" type="log_management" name="log_management" output="screen">
+        <param name="config_file" value="$(env HOME)/work/workspace/config/sys_log/config.yaml" />
+        <param name="self_check" value="$(env HOME)/work/workspace/config/sys_log/drive_error_codes.yaml" />
+        <param name="drive_error" value="$(env HOME)/work/workspace/config/sys_log/self_check.yaml" />
+        <param name="sync_enable" value="$(arg sync_enable)" />
+    </node>   
+    <!-- <node pkg="light_control" type="light_subscriber" name="lightsub" output="screen"/> -->
+
+</launch>

@@ -1,0 +1,35 @@
+<launch>
+
+    <arg name="vehicle_name" default="forktow"/>
+    <!-- <arg name="enable_remote" default="false" /> -->
+    <arg name="speed_gain" default="1" />
+    <!--速度增加倍率-->
+    <!-- <arg name="stop_brake_increase" default="30" /> -->
+    <!--急刹值-->
+
+    <!-- PID -->
+    <arg name="pid_enable" default="true"/>
+    <arg name="pid_kp" default="3.0" />
+    <arg name="pid_ki" default="0.25" />
+    <arg name="pid_kd" default="0.4" />
+    <arg name="max_accel" default="3.0" /> <!--单位: km/h/s -->
+    <arg name="min_accel" default="-6.0" />
+
+    <node pkg="can_client" name="vehicle_core" type="vehicle_core" output="screen">
+        <param name="vehicle_name" value="$(arg vehicle_name)"/>
+        <param name="speed_gain" value="$(arg speed_gain)" />
+        <remap from="vehicle_cmd" to="vehicle_cmd_smooth"/>
+        <!-- <param name="stop_brake_increase" value="$(arg stop_brake_increase)" />
+        <param name="enable_remote" value="$(arg enable_remote)" /> -->
+
+        <!-- PID -->
+        <param name="pid_enable" value="$(arg pid_enable)"/>
+        <param name="pid_kp" value="$(arg pid_kp)" />
+        <param name="pid_ki" value="$(arg pid_ki)" />
+        <param name="pid_kd" value="$(arg pid_kd)" />
+        <param name="max_accel" value="$(arg max_accel)" />
+        <param name="min_accel" value="$(arg min_accel)" />
+    </node>
+
+</launch>
+

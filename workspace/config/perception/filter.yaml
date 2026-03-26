@@ -1,0 +1,58 @@
+# 格式版本: 1.0
+
+crop_radius: 6.0  #最大过滤范围
+crop_radius_x: 3.0  #最大过滤范围x轴前后误差
+
+height_max: 5.0  #最大高度
+height_min: -1.60 #最小高度
+
+voxel_filter: 0.015      #体素滤波下采样精度
+voxel_filter_auto: false  #自动体素滤波下采样精度（会根据点云密集程度自动过滤防止CPU过高）
+voxel_filter_eleva: 0.15      #进电梯体素过滤体素滤波下采样精度
+filter_floor: true   #过滤地面
+angle_error: 5.0
+dis_threshold: 0.18  #内点距离阈值
+height_filt: 0.0  #最大过滤高度
+
+filter_transient: true   #噪点过滤使能
+neighboring_points: 30  #统计离群/邻近点数
+stand_threshold: 0.8      #统计离群/标准差乘数阈值
+radius_enble: true
+radius_radius: 0.15
+radius_min_neighbors: 2
+time_consistency_filter: false  #时间一致性滤波时能(只有噪点过滤使能才生效)
+transient_threshold_: 0.3   #时间一致性滤波/距离阈值(米)
+
+enble_trans: false  #是否进行坐标转换
+trans:              #转换单位米和弧度
+    - {x: 0.0, y: 0.3, z: 0.0, yaw: 1.57, pitch: 0.0, roll: 3.1415926}
+
+# 优化参数
+use_openmp: true          # 启用OpenMP多线程加速（虽然在代码中未直接使用）
+use_simd: true            # 启用SIMD指令集优化（AVX2/SSE2）
+enable_profiling: false    # 启用性能分析，输出各阶段耗时
+debug_mode: false         # 调试模式，输出额外信息
+
+
+# 车辆大小矩形各个点的位置(按顺序连接)
+rect:
+  - {x: 0.16, y: -0.10}
+  - {x: 0.16, y: -0.20}
+  - {x: 0.10, y: -0.42}
+  - {x: -0.16, y: -0.45}
+  - {x: -0.20, y: -0.58}
+  - {x: -1.66, y: -0.58}
+  - {x: -1.66, y: 0.60}
+  - {x: -0.20, y: 0.60}
+  - {x: -0.16, y: 0.45}
+  - {x: 0.10, y: 0.42}
+  - {x: 0.16, y: 0.20}
+  - {x: 0.16, y: 0.10}
+
+charge_enble: true   #充电过滤使能
+charge_length: 1.0   #充电桩长度
+charge_wide: 1.0     #充电桩宽度
+charge_high: 1.0    #充电桩高度
+charge_error: 1.5    #与车头方向的误差距离 (正向前)
+  
+  

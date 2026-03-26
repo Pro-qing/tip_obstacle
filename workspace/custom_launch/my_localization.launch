@@ -1,0 +1,40 @@
+<launch>
+	<!--参数设置-->
+
+	<!-- 定位前点云过滤 -->
+	<include file="$(find points_downsampler)/launch/points_downsample.launch">
+		<arg name="node_name" value="voxel_grid_filter"/>
+		<arg name="points_topic" value="/points_16"/>
+		<arg name="measurement_range" value="80" />								<!--测量最大距离-->
+	</include>
+
+	<!-- 融合定位 -->
+	<include file="$(find ekf_pkg)/launch/ekf_pkg.launch"/>
+	<!-- 定位丢失检测 -->
+    <include file="$(find localization_monitor)/launch/localization_monitor.launch"/>
+
+	<!-- <arg name="init_pos_gnss" default="0" />   -->
+	 <!--初始化gnss位置-->
+	<arg name="get_height" default="1" /><!--是否获取高度-->
+	<arg name="method_type" default="0" /><!--使用类型-->
+	<arg name="use_imu" default="false" /><!--是否使用IMU-->
+	<arg name="use_odom" default="true" />
+	<arg name="use_gnss" default="0" />
+	<arg name="gnss_reinit_fitness" default="2" />
+    <!--是否使用GNSS-->
+
+
+	<include file="$(env HOME)/work/workspace/custom_launch/encap_launch/location/ndt_matching.launch">
+		<!-- <arg name="init_pos_gnss" value="$(arg init_pos_gnss)" />   -->
+		 <!--初始化gnss位置-->
+		<arg name="get_height" value="$(arg get_height)" /><!--是否获取高度-->
+		<arg name="method_type" value="$(arg method_type)" /><!--使用类型-->
+		<arg name="use_imu" value="$(arg use_imu)" /><!--是否使用IMU-->
+		<arg name="use_odom" value="$(arg use_odom)" /><!--是否使用odom-->
+		<arg name="use_gnss" value="$(arg use_gnss)" />
+		<arg name="gnss_reinit_fitness" value="$(arg gnss_reinit_fitness)" />
+		
+        <!--是否使用GNSS-->
+	</include>
+
+</launch>

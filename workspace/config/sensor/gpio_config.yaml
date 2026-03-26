@@ -1,0 +1,9 @@
+input_ports: 
+  inputs:
+    - {pin: GPIO0, invert: false}   # 取反
+    - {pin: GPIO1, invert: false}   # 取反
+    - {pin: GPIO2, invert: false}  # 正常
+    - {pin: GPIO3, invert: false}
+    - {pin: GPIO4, invert: true}
+    - {pin: GPIO5, invert: true}
+output_ports: ["GPIO6",  "GPIO7"] # 输出端口列表

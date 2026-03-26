@@ -1,0 +1,32 @@
+<launch>
+    <!-- <arg name="index" default="10" />
+    <arg name="max_disPath" default="3.0" />
+    <arg name="minspeed" default="0.1" /> -->
+    <node pkg="lqr_control" name="lqr_control_node" type="lqr_control_node"  output="screen">
+        <param name="Q11" value="15.0"/>
+        <param name="Q22" value="5.0"/>
+        <!-- <param name="Q33" value="0.01"/> -->
+        <param name="R" value="0.8"/>
+        <param name="wheelbase" value="1.173" /> <!-- 叉车轴距 -->
+        <param name="lookback_distance" value="0.4" /> <!--倒车前视 -->
+        <param name="lookahead_distance" value="0.8" /> <!--前视 -->
+        <param name="maxLookahead_distance" value="2.5" /> <!--最大前视 -->
+        <param name="adjust_speed_lookahead" value="1.5" /> <!--预调节速度/影响前视距离 -->
+        <param name="adjust_ratio" value="0.5" /> <!--预调节比例   speed+adjust_ratio*（speed-adjust_speed_lookahead） -->
+        <param name="speedBack" value="-1.0" /> <!-- 倒车时速度 -->
+
+        <param name="minDisExtend" value="-0.1" /> <!-- 姿态调整最小距离（负往前小于此角度解除） -->
+        <param name="minAngleExtend" value="35.0" /> <!-- 姿态调整最小角度（小于此角度解除） -->
+        <param name="enAccurate" value="true" /> <!--精准到位置 -->
+        <param name="speedExtend" value="-1.2" /> <!-- 姿态调整时速度 -->
+
+        <param name="maxAngle" value="90.0" /> <!-- 输出的最大转角（度） -->
+        <param name="goaldis_backError" value="-0.04" /> <!-- 倒车终点误差 负往前-->
+        <param name="goaldis_forwError" value="0.0" /> <!-- 前进终点误差  正往前-->
+        <param name="switch_forwError" value="0.2" /> <!-- 前进切换路线到点误差  正往前-->
+        <param name="finish_posture_adjust" value="true" /> <!-- 终点姿态调整，使能后change_flag为1生效-->
+        <param name="endebug" value="false" />
+        <param name="use_sim" value="false" />
+   
+    </node>
+</launch>

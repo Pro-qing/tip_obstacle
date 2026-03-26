@@ -1,0 +1,30 @@
+<launch>
+    <!-- 定义话题参数 -->
+    <arg name="waypoints_topic" default="/final_waypoints" />
+    <arg name="cmd_input_topic" default="/vehicle_cmd" />
+    <arg name="cmd_output_topic" default="/vehicle_cmd_smooth" />
+
+    <!-- 启动节点 -->
+    <node pkg="curvature_calculator" type="curvature_calculator_node" name="curvature_calculator" output="screen">
+        <param name="curvature_threshold" value="0.12" /><!--最小曲率-->
+        <param name="min_speed" value="2.0" />
+        <param name="max_disPath" value="7.0" />
+        <param name="curvature_speed_factor" value="6.0" /><!--speed-（curvature*curvature_speed_factor）-->
+
+        <param name="desired_distance" value="0.5" />
+        <param name="max_trajectory_points" value="8" />
+        <param name="trajectory_distance_threshold" value="0.4" />
+
+        <param name="curvebefore_distance" value="8.0" /><!--入弯前减速距离-->
+        <param name="baseAlpha" value="0.01" /><!--基础平滑系数-->
+        <param name="lowAlpha" value="0.05" /><!--减速平滑系数-->
+        <param name="max_lateral_accel" value="5.88" /><!--m/s 最大侧向加速度用于限制转向-->
+        <param name="wheelbase" value="1.173" /><!--车辆轴距-->
+
+        
+        <!-- 动态配置输入输出话题 -->
+        <param name="waypoints_topic" value="$(arg waypoints_topic)" />
+        <param name="cmd_input_topic" value="$(arg cmd_input_topic)" />
+        <param name="cmd_output_topic" value="$(arg cmd_output_topic)" />
+    </node>
+</launch>

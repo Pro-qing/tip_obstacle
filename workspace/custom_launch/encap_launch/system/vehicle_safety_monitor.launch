@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="vehicle_safety_monitor" type="vehicle_safety_monitor_node" 
+          name="vehicle_safety_monitor" output="screen">
+        <rosparam file="$(env HOME)/work/workspace/config/safety_monitor/safety_monitor.yaml" command="load"/>
+        <!-- <rosparam file="$(find vehicle_safety_monitor)/params/safety_monitor.yaml" command="load"/> -->
+    </node>
+</launch>

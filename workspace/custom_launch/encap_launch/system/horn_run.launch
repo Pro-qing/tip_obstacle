@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="horn_control" type="horn_control" name="horn_control" output="screen">
+        <param name="config_file" value="$(env HOME)/work/workspace/config/sensor/self_check_horn.yaml" />
+        <param name="boot_time_ms" value="150000"/>
+    </node>   
+</launch>

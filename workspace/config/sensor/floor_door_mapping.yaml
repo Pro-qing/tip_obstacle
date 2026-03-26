@@ -1,0 +1,13 @@
+# Floor -> door_id mapping used by elevator_control
+# Loaded via rosparam inside the node's private namespace.
+# Parameter name: ~floor_door_id_map
+#
+# Keys are floor numbers (int), values are door_id bitmasks (uint8 in protocol).
+# Example mapping for two doors:
+# - door_id 1 means door1
+# - door_id 2 means door2
+# - door_id 3 means door1+door2
+floor_door_id_map:
+  "1": 2
+  "2": 1
+

@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="dtc_manager" type="dtc_manager" name="dtc_manager" output="screen">
+        <param name="config_file" value="$(env HOME)/work/workspace/config/sensor/self_check_dtc.yaml" />
+        <param name="boot_time_ms" value="120000"/>
+    </node>   
+</launch>

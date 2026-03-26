@@ -1,0 +1,17 @@
+<launch>
+    <node pkg="elevator_safetybox" type="elevator_safetybox" name="elevator_safetybox" output="screen">
+        <param name="positive_speed" value="3.6" />                     <!--正向速度-->
+        <param name="negative_speed" value="-3.6" />                    <!--反向速度-->
+        <param name="positive_looking_distance" value="1.5" />          <!--正向前视距离-->
+        <param name="negative_looking_distance" value="1.0" />          <!--反向前视距离-->
+        <param name="control_type" value="0" />                         <!--控制类型-->
+        <param name="max_angle" value="0.3" />                          <!--控制类型-->
+        
+    </node>  
+
+    <node pkg="elevator_safetybox" type="elevator_pointcloud_filter" name="elevator_pointcloud_filter" output="screen">
+        <rosparam file="$(env HOME)/work/workspace/config/perception/elevator_safety.yaml" command="load"/>
+    </node>  
+
+
+</launch>

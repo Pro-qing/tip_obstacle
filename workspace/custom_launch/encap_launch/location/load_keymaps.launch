@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="load_keymaps" name="load_keymaps_node" type="load_keymaps_node"  output="screen">
+        <param name="maps_dir" value="$(env HOME)/work/MAPS/load" />
+
+    </node>
+</launch>

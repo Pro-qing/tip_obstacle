@@ -1,0 +1,185 @@
+# 日志根目录
+log_directory: "/home/roam/work/logs/self_check"
+
+# 监控的话题列表
+monitored_rules:
+    enabled: true           # 使能
+    max_file_size: "1MB"   # 5MB (支持单位：B/KB/MB/GB)
+    max_backup_files: 16     # 最大备份文件数量
+    compress_backups: true  # 压缩备份 (false:只备份不压缩， true:压缩形式备份)
+    always_backup: false    # true: 表示时刻备份（忽略脏位）, false: 表示只在改变时备份（使用脏位）
+
+
+usb_devices:
+  - name: "Light(灯光)"
+    bit_position: 0
+    is_critical: true
+  - name: "IMU"
+    bit_position: 1
+    is_critical: true
+
+net_devices:
+  - name: "Router(路由器)"                              #路由器
+    bit_position: 0
+    is_critical: true
+  - name: "BSD Radar(补盲雷达)"                           #补盲雷达
+    bit_position: 1
+    is_critical: true
+  - name: "16-line LiDAR(顶头16线雷达)"                       #顶头16线雷达
+    bit_position: 2
+    is_critical: true
+  - name: "Front-Left Single-line LiDAR(左前单线激光)"        #左前单线激光
+    bit_position: 3
+    is_critical: true
+  - name: "Front-Right Single-line LiDAR(右前单线激光)"       #右前单线激光
+    bit_position: 4
+    is_critical: true
+  - name: "Rear-Left Single-line LiDAR(左后单线激光)"         #左后单线激光
+    bit_position: 5
+    is_critical: true
+  - name: "Rear-Right Single-line LiDAR(右后单线激光)"        #右后单线激光
+    bit_position: 6
+    is_critical: true
+  - name: "Camera(相机)"                              #相机
+    bit_position: 7
+    is_critical: true
+  - name: "CAN(CAN盒)"                                 #CAN
+    bit_position: 8
+    is_critical: true
+  - name: "CAN(CAN盒主机网口)"                                 #CAN
+    bit_position: 9
+    is_critical: true
+
+
+
+can_devices:
+  - name: "0x181(行走驱动器)"
+    bit_position: 0
+    is_critical: true
+  - name: "0x182(转向驱动器)"                               
+    bit_position: 1
+    is_critical: true
+  - name: "0x18FF28F4(电池)"                          #电池
+    bit_position: 2
+    is_critical: true
+
+topics:
+  - name: "/vehicle_cmd(自动驾驶控制话题数据)"
+    bit_position: 0
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/points_raw(雷达融合后话题数据)"
+    bit_position: 2
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/scan_bleft(左后单线雷达话题数据)"
+    bit_position: 3
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/scan_bright(右后单线雷达话题数据)"
+    bit_position: 4
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/scan_left(左前单线雷达话题数据)"
+    bit_position: 5
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/scan_right(右前单线雷达话题数据)"
+    bit_position: 6
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/points_16(顶16线雷达话题数据)"
+    bit_position: 7
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/points_mid(补盲雷达话题数据)"
+    bit_position: 8
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/points_tip(叉尖融合后雷达话题数据)"
+    bit_position: 9
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/can_box_raw(can原始话题数据)"
+    bit_position: 10
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/tip_dis(叉尖障碍物距离话题数据)"
+    bit_position: 11
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/tracked_objects(感知障碍物话题数据)"
+    bit_position: 12
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/points_filter(过滤后雷达话题数据)"
+    bit_position: 13
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/imu_raw(imu话题数据)"                             
+    bit_position: 14
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+
+  - name: "/vehicle_cmd_smooth(平滑后控制)"                  
+    bit_position: 15
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/odom_pose(卡尔曼定位数据)"                 
+    bit_position: 16                     
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"
+
+  - name: "/ndt_pose(ndt定位数据)"                 
+    bit_position: 17                    
+    error_types:
+      timeout: "Communication Timeout(话题超时)"
+      critical_fps: "Critical Low Frame Rate(严重低帧率)"
+      warning_fps: "Frame Rate Warning(帧率警告)"

@@ -1,0 +1,39 @@
+<!-- -->
+<launch>
+
+  <arg name="SERVER_IP" default="192.168.100.82" />
+  <arg name="SERVER_PORT" default="5501" />
+  <arg name="arm_lenght" default="1100" />
+    <!-- 托盘与库位差最大识别角度 单位度-->
+  <arg name="maxAngle" default="60.0" />
+  <!-- 托盘与库位差最大识别距离 单位米-->
+  <arg name="maxDis" default="0.6" />
+  <!-- 托盘识别位置与托盘中心补偿距离 单位米（用于托盘与库位的距离判断（计算中心距离））-->
+  <arg name="compensate_dis" default="1.1" />
+  <!-- 连续触发 -->
+  <arg name="continuous" default="true" />
+  <!-- 调试使能 -->
+  <arg name="endebug" default="false" />
+
+  <node pkg="pallet_planning" type="pallet_delect_node" name="pallet_delect_node"  output="screen">
+      <param name="SERVER_IP" type="str" value="$(arg SERVER_IP)"/>
+      <param name="SERVER_PORT" type="int" value="$(arg SERVER_PORT)"/>
+      <param name="arm_lenght" type="int" value="$(arg arm_lenght)"/>
+      <param name="continuous" type="bool" value="$(arg continuous)"/>
+      <param name="maxAngle" type="double" value="$(arg maxAngle)"/>
+      <param name="maxDis" type="double" value="$(arg maxDis)"/>
+      <param name="compensate_dis" type="double" value="$(arg compensate_dis)"/>
+      <param name="endebug" type="bool" value="$(arg endebug)"/>
+  </node>
+
+
+  <node pkg="pallet_planning" type="pallet_planning_node" name="pallet_planning_node"  output="screen">
+        <param name="Q11" type="double" value="50.0"/>
+        <param name="Q22" type="double" value="10.0"/>
+        <param name="Q33" type="double" value="0.001"/>
+        <param name="R" type="double" value="0.01"/>
+        <param name="lookback_distance" value="0.2" /> <!--前视 -->
+
+  </node>
+
+</launch>

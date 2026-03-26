@@ -1,0 +1,115 @@
+# 驱动器错误监控配置
+# 日志根目录
+log_directory: "/home/roam/work/logs/drive_error"
+
+# 监控规则
+monitored_rules:
+    enabled: true           # 使能
+    max_file_size: "1MB"   # 最大文件大小 (支持单位：B/KB/MB/GB)
+    max_backup_files: 16     # 最大备份文件数量
+    compress_backups: true  # 压缩备份
+    always_backup: false    # true: 时刻备份, false: 只在错误变化时备份
+
+# 驱动器错误状态字定义
+error_status_words:
+  error_word1:        # 错误状态字1
+    bits:
+      - bit: 0
+        mask: "0001"
+        description: "扩展错误，详阅'错误状态2.2602.00'"
+      - bit: 1
+        mask: "0002"
+        description: "编码器ABZ/未连接"
+      - bit: 2
+        mask: "0004"
+        description: "编码器UVW/编码器内部"
+      - bit: 3
+        mask: "0008"
+        description: "编码器计数/编码器CRC"
+      - bit: 4
+        mask: "0010"
+        description: "驱动器温度"
+      - bit: 5
+        mask: "0020"
+        description: "过压"
+      - bit: 6
+        mask: "0040"
+        description: "低压"
+      - bit: 7
+        mask: "0080"
+        description: "过流"
+      - bit: 8
+        mask: "0100"
+        description: "吸收电阻"
+      - bit: 9
+        mask: "0200"
+        description: "位置跟随误差"
+      - bit: 10
+        mask: "0800"
+        description: "逻辑低压"
+      - bit: 11
+        mask: "1000"
+        description: "电机或驱动器抗扰"
+      - bit: 12
+        mask: "2000"
+        description: "脉冲频率过高"
+      - bit: 13
+        mask: "4000"
+        description: "电机温度"
+      - bit: 14
+        mask: "8000"
+        description: "电机励磁报警/编码器通讯"
+      - bit: 15
+        mask: "8000"
+        description: "EEPROM"
+
+  error_word2:  # 错误状态字2
+    bits:
+      - bit: 16
+        mask: "0001"
+        description: "电流传感器"
+      - bit: 17
+        mask: "0002"
+        description: "看门狗"
+      - bit: 18
+        mask: "0004"
+        description: "异常中断"
+      - bit: 19
+        mask: "0008"
+        description: "MCU ID"
+      - bit: 20
+        mask: "0010"
+        description: "电机配置"
+      - bit: 21
+        mask: "0020"
+        description: "逻辑输出"
+      - bit: 22
+        mask: "0040"
+        description: "STO1"
+      - bit: 23
+        mask: "0080"
+        description: "STO2"
+      - bit: 24
+        mask: "0100"
+        description: "外部继电器"
+      - bit: 25
+        mask: "0200"
+        description: "正限位"
+      - bit: 26
+        mask: "0400"
+        description: "负限位"
+      - bit: 27
+        mask: "0800"
+        description: "SPI内部"
+      - bit: 28
+        mask: "1000"
+        description: "CAN总线中断"
+      - bit: 29
+        mask: "2000"
+        description: "全闭环方向"
+      - bit: 30
+        mask: "4000"
+        description: "主编码器ABZ"
+      - bit: 31
+        mask: "8000"
+        description: "主编码器计数"

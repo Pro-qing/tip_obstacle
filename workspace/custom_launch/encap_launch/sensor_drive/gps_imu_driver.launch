@@ -1,0 +1,38 @@
+<launch>
+    <!-- GPS-IMU驱动节点 -->
+    <node name="gps_imu_driver" pkg="gps_imu_driver" type="gps_imu_driver_node" output="screen">
+        <!-- 串口传输延迟 -->
+        <param name="usb_delay" value="0.030" />
+
+        <!-- GPS启用控制 -->
+        <param name="enable_gps" value="false" />
+        
+        <!-- GPS原点坐标 (经纬度高度，用于ENU坐标系转换) -->
+        <param name="use_ekf" value="false" /> 
+        <param name="use_origin" value="false" /> <!-- 是否使用固定原点 -->
+        <param name="gps_origin_lat" value="22.760967093760097" />     <!-- 原点纬度 (度) -->
+        <param name="gps_origin_lon" value="114.41212262354153" />    <!-- 原点经度 (度) -->
+        <param name="gps_origin_alt" value="32.7992286" />        <!-- 原点高度 (米) -->
+        <param name="gps_star_min" value="20" />  <!-- GPS单天线卫星初始化阀值 -->
+
+        <param name="gps_kf_R_xy" value="1.2" /> <!-- gps_kf 观测噪声 -->
+        <param name="gps_kf_R_z" value="3.0" />
+        <param name="gps_kf_P_xyz" value="1.0" /> <!-- gps_kf 初始协方差 -->
+        <param name="gps_kf_Q_xyz" value="0.01" /> <!-- gps_kf 过程噪声 -->
+
+        <!-- GPS参数 -->
+        <param name="gps_port" value="/dev/ttyUSB1" />
+        <param name="gps_topic" value="/gps/fix" />
+        <param name="gps_baud_rate" value="460800" />
+        <param name="output_file" value="$(find gps_imu_driver)/doc/gngga_output.txt"/>
+        <param name="print_interval" value="2.0" />
+        <param name="is_outTfile" value="false" />
+        <param name="source_heading" value="false" /> <!-- true 使用原始GPS航向（东北上，0~360,顺时为正） false 使用ROS标准航向（前左上，-180~180,逆时为正） -->
+
+        <!-- IMU参数 -->
+        <param name="imu_port" value="/dev/ttyS0" />
+        <param name="imu_baud_rate" value="460800" />
+        <param name="imu_count" value="0.005" /> <!-- IMU计数间隔，单位秒 -->
+        <param name="imu_topic" value="/imu_raw" />
+    </node>
+</launch>

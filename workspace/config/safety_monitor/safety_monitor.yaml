@@ -1,0 +1,83 @@
+# 车辆安全监控系统配置
+
+# 通用安全参数
+safety_params:
+  update_rate: 10.0               # 更新频率(Hz)
+  enable_debug: false             # 启用调试输出
+
+# 防撞条配置
+bumper:
+  enabled: true
+  trigger_bit: 3
+  active_high: false
+  response_type: 2
+  response_speed: 0.0             # 急停速度(km/h)
+
+# 叉尖停障配置
+forklift_tip:
+  enabled: true
+  emergency_distance: 180.0       # 急停距离(mm)
+  slowdown_distance: 0.0          # 减速距离(mm)
+  emergency_speed: 0.0            # 急停速度(km/h)
+  slowdown_speed: 1.8             # 减速速度(km/h) - 相当于0.5 m/s
+  resolution: 10.0                 # 分辨率
+  forward_only: false             # 方向限制：true-仅前进生效，false-仅倒车生效
+
+# 任务状态监控配置
+task_state:
+  enabled: true
+  stop_states: [6]             # 需要停止的任务状态
+  slow_states: []                # 需要减速的任务状态
+  stop_speed: 0.0                 # 停止速度(km/h)
+  slow_speed: 1.08                # 减速速度(km/h) - 相当于0.3 m/s
+
+# DTC报错监控配置
+dtc:
+  enabled: true
+  slowdown_speed: 1.08            # 减速速度(km/h) - 相当于0.3 m/s
+  emergency_speed: 0.0            # 急停速度(km/h)
+  
+  slowdown_errors: [               # 减速报错字段
+    "SENSOR_ERROR",
+    "BATTERY_LOW"
+  ]
+
+# 定位状态监控配置
+localization:
+  enabled: true
+  response_type: 2      # 0-不响应,1-减速,2-急停
+  response_speed: 0.0    # 急停速度(km/h)
+  lost_is_true: false    # 定位丢失触发方式： true, false
+
+# 安全框监控配置
+safe_obstacle:
+  enabled: true
+  emergency_value: 1              # 触发急停的值
+  slowdown_value: 2               # 触发减速的值
+  emergency_speed: 0.0            # 急停速度(km/h)
+  slowdown_speed: 3.6            # 减速速度(km/h) - 相当于0.3 m/s
+  forward_only: true              # 方向限制：true-仅前进生效，false-仅倒车生效
+
+# 库位障碍检测监控配置
+obstacle_detection:
+  enabled: true
+  emergency_bits: [0, 1]         # 触发急停的位列表（0-31）
+  slowdown_bits: []          # 触发减速的位列表（0-31）
+  emergency_speed: 0.0           # 急停速度(km/h)
+  slowdown_speed: 1.08           # 减速速度(km/h) - 相当于0.3 m/s
+  active_high: true              # 触发方式：true-高电平触发，false-低电平触发
+  
+  #位定义数组，长度32，每个元素对应一个位的含义
+  bit_definitions: [
+    "Carport",       # 位0
+    "Elevator",       # 位1
+  ]
+
+# 充电安全监控配置
+charging_safety:
+  enabled: true
+  trigger_bits: [0, 1]         # 触发位数组（0-7），任意一位触发即生效
+  active_high: true               # 触发电平：true-高电平触发，false-低电平触发
+  direction_mode: 2               # 生效方向：0-前进生效，1-后退生效，2-前后都生效
+  emergency_speed: 0.0            # 急停速度(km/h)
+  slowdown_speed: 1.08            # 减速速度(km/h) - 相当于0.3 m/s

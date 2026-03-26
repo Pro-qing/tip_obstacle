@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="path_planning" name="floor_planner_node" type="floor_planner_node" output="screen">
+    <remap from="/floor_rcs" to="/Path_to_RCS"/>
+    </node>
+</launch>

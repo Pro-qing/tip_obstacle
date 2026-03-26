@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="path_planning" name="op_local_generator_node" type="op_local_generator_node" output="screen">
+        <param name="maxLocalPlanDistance" value="20.0" /><!--局部最大距离-->
+        <param name="resetTraversalDis" value="1.0" /> <!--重置遍历最大距离用于局部起点与车过远时重新遍历-->
+        <param name="historyDis" value="0.6" /><!--车后保留距离-->
+
+        <remap from="local_generators" to="local_trajectories" />
+        <remap from="local_generators_rviz" to="local_trajectories_gen_rviz" />
+    </node>
+</launch>

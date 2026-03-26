@@ -1,0 +1,44 @@
+
+
+points_mid:
+  x: 0.1
+  y: 0.02
+  z: -0.30
+  roll: 3.1415926   # 绕X轴
+  pitch: 0.20        # 绕Y轴
+  yaw: -0.02         # 绕Z轴
+
+ 
+
+elevator_min_x: -1.65
+elevator_max_x: 0.50
+elevator_min_y: -0.65
+elevator_max_y: 0.65
+elevator_min_z: 0.00
+elevator_max_z: 2.00
+
+carports_min_x: -0.9
+carports_max_x: 0.9
+carports_min_y: -0.7
+carports_max_y: 0.7
+carports_min_z: 0.00
+carports_max_z: 1.00
+
+
+car_rect:
+  - {x: 0.16, y: -0.20}
+  - {x: 0.16, y: -0.40}
+  - {x: 0.10, y: -0.53}
+  - {x: -0.16, y: -0.58}
+  - {x: -0.22, y: -0.68}
+  - {x: -1.66, y: -0.68}
+  - {x: -1.66, y: 0.68}
+  - {x: -0.22, y: 0.68}
+  - {x: -0.16, y: 0.58}
+  - {x: 0.10, y: 0.53}
+  - {x: 0.16, y: 0.40}
+  - {x: 0.16, y: 0.20}
+car_min_z: -1.60
+car_max_z: 0.50
+
+

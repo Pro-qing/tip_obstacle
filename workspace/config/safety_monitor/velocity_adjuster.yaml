@@ -1,0 +1,84 @@
+# ====================== 安全策略优先级配置 ======================
+# 策略按优先级顺序排列（数值越小优先级越高）
+# - type: 策略类型 (constant=固定减速度, ratio=比例减速)
+# - decel/ratio: 根据类型选择对应参数
+safety_priorities:
+  - id: 1                       # 策略唯一ID
+    priority: 1                 # 优先级数值
+    type: "constant"            # 固定减速度策略
+    decel: 3.0                  # 固定减速度值(m/s²)
+
+  - id: 2
+    priority: 2
+    type: "constant"
+    decel: 1.5
+
+  - id: 3
+    priority: 3
+    type: "ratio"               # 比例减速策略
+    ratio: 1.0                  # 当前速度的80%
+
+  - id: 4
+    priority: 4
+    type: "ratio"
+    ratio: 0.9
+
+
+# ====================== 状态映射配置 ======================
+state_mapping:
+  # 碰撞检测映射
+  collision:
+    bit: 0                      # 碰撞标志位位置
+    strategy_id: 1              # 对应的策略ID
+
+  # 控制异常位映射 (列表格式)
+  control_errors:
+    - bit: 0                    # 控制状态标志位
+      strategy_id: 3            # 触发策略ID=2 (priority=2)
+    - bit: 1
+      strategy_id: 3            # 触发策略ID=3 (priority=3)
+
+  # 硬件异常映射 (设备索引+位组合)
+  hardware_errors:
+    - device_index: 0           # 硬件设备索引
+      bit: 0                    # 设备状态标志位
+      strategy_id: 3            # 触发策略ID=3
+    - device_index: 0
+      bit: 1
+      strategy_id: 3
+    - device_index: 1           # 硬件设备索引
+      bit: 0                    # 设备状态标志位
+      strategy_id: 3            # 触发策略ID=3
+    - device_index: 1
+      bit: 1
+      strategy_id: 3
+    - device_index: 1           # 硬件设备索引
+      bit: 2                    # 设备状态标志位
+      strategy_id: 3            # 触发策略ID=3
+    - device_index: 1
+      bit: 3
+      strategy_id: 3
+    - device_index: 1           # 硬件设备索引
+      bit: 4                    # 设备状态标志位
+      strategy_id: 3
+
+  # 通信异常映射 (话题索引+位组合)
+  topic_errors:
+    - topic_index: 0            # 通信话题索引
+      bit: 0                    # 话题状态标志位
+      strategy_id: 3            # 触发策略ID=4
+    - topic_index: 0            # 通信话题索引
+      bit: 1                    # 话题状态标志位
+      strategy_id: 3            # 触发策略ID=4
+    - topic_index: 0            # 通信话题索引
+      bit: 2                    # 话题状态标志位
+      strategy_id: 3            # 触发策略ID=4
+    - topic_index: 0            # 通信话题索引
+      bit: 3                    # 话题状态标志位
+      strategy_id: 3            # 触发策略ID=4
+    - topic_index: 0            # 通信话题索引
+      bit: 4                    # 话题状态标志位
+      strategy_id: 3            # 触发策略ID=4
+    - topic_index: 0            # 通信话题索引
+      bit: 5                    # 话题状态标志位
+      strategy_id: 3            # 触发策略ID=4      
