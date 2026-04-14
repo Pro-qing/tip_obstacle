@@ -115,6 +115,12 @@ private:
     std::atomic<double> last_parking_time_{0.0}; 
     bool marker_published_{false};
 
+    // 实时记录上游下发的任务类型
+    std::atomic<int> current_task_type_{-1};
+
+    // 从 launch 文件读取的库位长廊激活距离参数 
+    double carport_activation_dist_;
+
     // 库位默认尺寸参数
     double carports_min_x_ = -0.7;
     double carports_max_x_ = 0.9;

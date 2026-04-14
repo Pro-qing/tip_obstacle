@@ -11,11 +11,17 @@
     <arg name="out_bright_points_cloud" default="bright_points_tip" />
 
     <!-- yaml文件路径 -->
-    <arg name="yaml_path_tf" default="/home/ros_ws/workspace/param/lidar_calibration.yaml" />
+    <!-- <arg name="yaml_path_tf" default="$(env HOME)/work/workspace/param/lidar_calibration.yaml" />
+    <arg name="yaml_path_carport" default="$(env HOME)/work/workspace/config/perception/obstacle_detection.yaml" /> -->
+
+    <arg name="yaml_path_tf" default="/home/ros_ws/workspace/param" />
     <arg name="yaml_path_carport" default="/home/ros_ws/workspace/config/perception/obstacle_detection.yaml" />
-    
+
     <!-- 过滤参数 -->
     <arg name="debug" default="false" />
+
+     <!-- 库位长廊的激活距离 (单位: 米) -->
+    <param name="carport_activation_dist" value="5.0" />
 
     <arg name="left_filter_enable" default="1" />
     <arg name="left_min_angle" default="30.0" />
@@ -35,7 +41,7 @@
     <arg name="pallet_id_left_max_y" default="-0.00" />           
     <arg name="pallet_id_right_filter_enable" default="1" />
     <arg name="pallet_id_right_min_angle" default="15.0" />
-    <arg name="pallet_id_right_max_angle" default="350.0" />
+    <arg name="pallet_id_right_max_angle" default="355.0" />
     <arg name="pallet_id_right_min_y" default="0.00" />          
     <arg name="pallet_id_right_max_y" default="-0.50" />               
 

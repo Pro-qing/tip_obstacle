@@ -89,6 +89,12 @@ add_message_files(
     SafetyCommand.msg
     ClampCmd.msg
     ClampInfo.msg
+
+    VehicleState.msg
+    SoftwareState.msg
+    TaskState.msg
+    Batterystate.msg
+    VehicleStatus.msg
 )
 
 add_service_files(

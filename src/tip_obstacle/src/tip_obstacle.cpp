@@ -11,6 +11,9 @@ TipObstacleNode::TipObstacleNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
 {
     // 1. 获取常规参数与 Debug 模式
     pnh_.param<bool>("debug", debug_mode_, false);
+
+    // 读取库位长廊激活距离，如果没有配置则默认使用 8.0 米 
+    pnh_.param<double>("carport_activation_dist", carport_activation_dist_, 8.0);
     if (debug_mode_) {
         ROS_WARN("\n=======================================================\n"
                  " TIP_OBSTACLE DEBUG MODE IS ENABLED! \n"
@@ -34,15 +37,21 @@ TipObstacleNode::TipObstacleNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
     // 2. 获取 YAML 路径参数 (TF 和 库位)
     // const char* home_dir = getenv("HOME");
     // std::string default_yaml_path_tf = (home_dir ? std::string(home_dir) : "") + "/work/workspace/param/lidar_calibration.yaml";
+    // pnh_.param<std::string>("tf_yaml_path", yaml_path_, default_yaml_path_tf);
+    // ROS_INFO("TipObstacle: Using Lidar YAML from: %s", yaml_path_.c_str());
+
+    // std::string default_yaml_path_carport = (home_dir ? std::string(home_dir) : "") + "/work/autoware.ai/src/ant/secure_vehicle/obstacle_detection/params/obstacle_detection.yaml";
+    // pnh_.param<std::string>("carport_yaml_path", carport_yaml_path_, default_yaml_path_carport);
+    // ROS_INFO("TipObstacle: Using Carport YAML from: %s", carport_yaml_path_.c_str());
+
     std::string default_yaml_path_tf = "/home/ros_ws/workspace/param/lidar_calibration.yaml";
     pnh_.param<std::string>("tf_yaml_path", yaml_path_, default_yaml_path_tf);
     ROS_INFO("TipObstacle: Using Lidar YAML from: %s", yaml_path_.c_str());
 
-    // std::string default_yaml_path_carport = (home_dir ? std::string(home_dir) : "") + "/work/autoware.ai/src/ant/secure_vehicle/obstacle_detection/params/obstacle_detection.yaml";
     std::string default_yaml_path_carport = "/home/ros_ws/workspace/config/perception/obstacle_detection.yaml";
     pnh_.param<std::string>("carport_yaml_path", carport_yaml_path_, default_yaml_path_carport);
     ROS_INFO("TipObstacle: Using Carport YAML from: %s", carport_yaml_path_.c_str());
-
+    
     // 3. 加载配置文件并启动双文件监听线程
     loadYAML();
     yaml_watcher_thread_ = std::thread(&TipObstacleNode::watchYAMLThread, this);
@@ -191,37 +200,37 @@ void TipObstacleNode::palletIdCallback(const std_msgs::Int8::ConstPtr &msg) {
 void TipObstacleNode::twistCmdCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
     float vx = msg->twist.linear.x;
     
-    // 只要有微弱的倒车速度，立刻续命 2 秒
-    if (vx < -0.01) {
-        last_reverse_time_.store(ros::Time::now().toSec());
+    if (vx < -0.005) { // 降低触发门槛，只要有倒车意图立刻触发
+        // 使用消息自带的时间戳
+        last_reverse_time_.store(msg->header.stamp.toSec());
     } 
-    // 只有当车辆明确挂入前进挡，且大脚油门开走时 (>0.2m/s)
-    // 直接清零时间戳，瞬间解除倒车过滤状态
-    else if (vx > 0.2) {
+    // 只要不再是倒车（大于等于0），且有向前的意图（哪怕是极低速 0.05）
+    // 就应该斩断倒车续命状态，避免带着倒车防撞框往前开
+    else if (vx > 0.05) { 
         last_reverse_time_.store(0.0);
     }
 }
 
 // 任务回调：保护合法距离，防止 0.0 污染导致绿框坍缩回车底
 void TipObstacleNode::feedbackStatusCallback(const autoware_remove_msgs::State::ConstPtr& msg) {
-    // 只有当上游明确处于卸货任务 (type == 1) 时，才去提取距离并更新时间戳
+    // 1. 实时更新当前的任务类型
+    current_task_type_.store(msg->TaskInfo.type);
+
+    // 2. 只有卸货任务 (type == 1)，才去解析距离
     if (msg->TaskInfo.type == 1) {
         float current_dis = msg->TaskInfo.site.dis;
         
-        // 过滤掉上游可能在任务刚下发时发送的 0.0 异常数据
-        // 如果车辆真的完全停进去了，距离一般也会是 0.01、0.02 左右
+        // 过滤掉上游异常的 0.0 距离
         if (current_dis > 0.01f) {
-            dis_to_carport_.store(current_dis); // 只有合法的有效距离才允许更新！
+            dis_to_carport_.store(current_dis); 
+            
+            // 只有距离小于 carport_activation_dist_ 米，才被认定为“抵达库位长廊”，开始刷新长廊时间锁
+            if (current_dis < carport_activation_dist_) {
+                last_parking_time_.store(ros::Time::now().toSec());
+            }
         }
-
-        // 只要距离小于 8.0 米，就开始不断刷新 2 秒无敌时间锁
-        if (current_dis < 8.0f) {
-            last_parking_time_.store(ros::Time::now().toSec());
-        }
-    }
-    // 如果 type != 1（比如瞬间跳变成 0），我们什么都不做！
-    // 既不更新距离，也不更新时间戳。
-    // 2 秒后，如果它还是非 1，超时机制自然会把绿框平滑地关掉。
+    } 
+    // 其他任务，或者距离 > carport_activation_dist米时，时间锁都不会更新，2秒后长廊过滤自然关闭。
 }
 
 Eigen::Affine3f TipObstacleNode::getTransformMatrix(const TfParam& param) {
@@ -242,6 +251,50 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_raw(new pcl::PointCloud<pcl::PointXYZI>());
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZI>());
     pcl::fromROSMsg(pc2_msg, *cloud_raw);
+
+    // ================== 【核心防撞开关逻辑】 ==================
+    int task_type = current_task_type_.load();
+    
+    // 获取当前车辆运动状态（2秒防抖时间）
+    // 在调用处传入 msg->header.stamp.toSec() 作为 current_time
+    double current_time = scan_msg.header.stamp.toSec();
+    bool is_reversing = (current_time - last_reverse_time_.load()) < 2.0;
+    bool is_parking   = (current_time - last_parking_time_.load()) < 2.0; // 是否已抵达库位长廊范围内
+    
+    bool enable_collision = false; 
+
+    if (task_type == 1) {
+        // 【针对卸货任务，严格拆分为两个阶段】：
+        if (!is_parking) {
+            // 阶段 1：【在库位过滤和安全长廊之前】 (距离 > 激活距离)
+            // 完全满足要求：只要速度是倒车的情况下，就开启正常的叉尖防撞！前进时关闭。
+            enable_collision = is_reversing;
+        } else {
+            // 阶段 2：【已进入库位安全长廊】 (距离 < 激活距离)
+            // 倒车时开启防撞，产生的点云随后会被 applyCarportFilter 自动裁剪为绿框。
+            // 警告：这里如果不倒车（比如车子往前开驶出库位），也必须关闭防撞！
+            // 否则 applyCarportFilter 拒绝裁剪，全宽的原生雷达会立刻扫到旁边货架导致急刹死锁。
+            enable_collision = is_reversing; 
+        }
+    } 
+    else if (task_type == 3) {
+        // 【指定点任务】：强制始终开启正常防撞
+        enable_collision = true;
+    } 
+    else {
+        // 【其它任务】：统统根据“是否有倒车速度”来决定是否开启
+        enable_collision = is_reversing;
+    }
+    // else if () {
+    // 
+    // }
+
+    // 如果判定需要关闭防撞 (且不是debug模式)，直接返回空点云
+    if (!enable_collision && !debug_mode_) {
+        // 返回空的 cloud_filtered 后，后续计算出来的最近距离将保持为绝对安全的 255.0f
+        return cloud_filtered; 
+    }
+    // ==========================================================
 
     tip_obstacle::tip_obstacleConfig cfg;
     {
@@ -603,6 +656,10 @@ int main(int argc, char **argv) {
 
     TipObstacleNode node(nh, pnh);
 
-    ros::spin();
+    // 替换 ros::spin(); 为异步多线程
+    ros::AsyncSpinner spinner(2); // 开启2个线程（雷达、速度、任务状态各自不阻塞）
+    spinner.start();
+    ros::waitForShutdown();
+    
     return 0;
 }
