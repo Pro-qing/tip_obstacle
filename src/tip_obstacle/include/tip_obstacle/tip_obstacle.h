@@ -52,13 +52,12 @@ private:
     void scanCallbackSync(const sensor_msgs::LaserScan::ConstPtr &msg1, const sensor_msgs::LaserScan::ConstPtr &msg2);
     void scanCallbackSingle(const sensor_msgs::LaserScan::ConstPtr &msg);
 
-    // 核心函数：输入单线雷达数据，在原始坐标系过滤，再转换到 velodyne 坐标系返回
     pcl::PointCloud<pcl::PointXYZI>::Ptr filterAndTransformCloud(
-        const sensor_msgs::LaserScan& scan_msg,
-        bool is_left,
-        float& global_min_dis);
+            const sensor_msgs::LaserScan& scan_msg,
+            bool is_left);
 
     Eigen::Affine3f getTransformMatrix(const TfParam& param);
+    float calculateMinDisToLidar(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, bool is_left);
 
     // --- 库位动态安全走廊与可视化相关函数 ---
     void twistCmdCallback(const geometry_msgs::TwistStamped::ConstPtr& msg);

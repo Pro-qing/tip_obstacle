@@ -52,6 +52,7 @@ TipObstacleNode::TipObstacleNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
     pnh_.param<std::string>("carport_yaml_path", carport_yaml_path_, default_yaml_path_carport);
     ROS_INFO("TipObstacle: Using Carport YAML from: %s", carport_yaml_path_.c_str());
     
+
     // 3. 加载配置文件并启动双文件监听线程
     loadYAML();
     yaml_watcher_thread_ = std::thread(&TipObstacleNode::watchYAMLThread, this);
@@ -200,13 +201,13 @@ void TipObstacleNode::palletIdCallback(const std_msgs::Int8::ConstPtr &msg) {
 void TipObstacleNode::twistCmdCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
     float vx = msg->twist.linear.x;
     
-    if (vx < -0.005) { // 降低触发门槛，只要有倒车意图立刻触发
-        // 使用消息自带的时间戳
-        last_reverse_time_.store(msg->header.stamp.toSec());
+    // 只要有微弱的倒车速度，立刻续命 2 秒
+    if (vx < -0.01) {
+        last_reverse_time_.store(ros::Time::now().toSec());
     } 
-    // 只要不再是倒车（大于等于0），且有向前的意图（哪怕是极低速 0.05）
-    // 就应该斩断倒车续命状态，避免带着倒车防撞框往前开
-    else if (vx > 0.05) { 
+    // 只有当车辆明确挂入前进挡，且大脚油门开走时 (>0.2m/s)
+    // 直接清零时间戳，瞬间解除倒车过滤状态
+    else if (vx > 0.2) {
         last_reverse_time_.store(0.0);
     }
 }
@@ -224,13 +225,13 @@ void TipObstacleNode::feedbackStatusCallback(const autoware_remove_msgs::State::
         if (current_dis > 0.01f) {
             dis_to_carport_.store(current_dis); 
             
-            // 只有距离小于 carport_activation_dist_ 米，才被认定为“抵达库位长廊”，开始刷新长廊时间锁
+            // 【核心】：只有距离小于 8.0 米，才被认定为“抵达库位长廊”，开始刷新长廊时间锁
             if (current_dis < carport_activation_dist_) {
                 last_parking_time_.store(ros::Time::now().toSec());
             }
         }
     } 
-    // 其他任务，或者距离 > carport_activation_dist米时，时间锁都不会更新，2秒后长廊过滤自然关闭。
+    // 其他任务，或者距离 > 8米时，时间锁都不会更新，2秒后长廊过滤自然关闭。
 }
 
 Eigen::Affine3f TipObstacleNode::getTransformMatrix(const TfParam& param) {
@@ -242,8 +243,9 @@ Eigen::Affine3f TipObstacleNode::getTransformMatrix(const TfParam& param) {
     return mat;
 }
 
+// 删除了 float& global_min_dis 参数
 pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
-    const sensor_msgs::LaserScan& scan_msg, bool is_left, float& global_min_dis) 
+    const sensor_msgs::LaserScan& scan_msg, bool is_left) 
 {
     sensor_msgs::PointCloud2 pc2_msg;
     projector_.projectLaser(scan_msg, pc2_msg);
@@ -254,44 +256,17 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
 
     // ================== 【核心防撞开关逻辑】 ==================
     int task_type = current_task_type_.load();
-    
-    // 获取当前车辆运动状态（2秒防抖时间）
-    // 在调用处传入 msg->header.stamp.toSec() 作为 current_time
-    double current_time = scan_msg.header.stamp.toSec();
+    double current_time = ros::Time::now().toSec();
     bool is_reversing = (current_time - last_reverse_time_.load()) < 2.0;
-    bool is_parking   = (current_time - last_parking_time_.load()) < 2.0; // 是否已抵达库位长廊范围内
     
     bool enable_collision = false; 
-
     if (task_type == 1) {
-        // 【针对卸货任务，严格拆分为两个阶段】：
-        if (!is_parking) {
-            // 阶段 1：【在库位过滤和安全长廊之前】 (距离 > 激活距离)
-            // 完全满足要求：只要速度是倒车的情况下，就开启正常的叉尖防撞！前进时关闭。
-            enable_collision = is_reversing;
-        } else {
-            // 阶段 2：【已进入库位安全长廊】 (距离 < 激活距离)
-            // 倒车时开启防撞，产生的点云随后会被 applyCarportFilter 自动裁剪为绿框。
-            // 警告：这里如果不倒车（比如车子往前开驶出库位），也必须关闭防撞！
-            // 否则 applyCarportFilter 拒绝裁剪，全宽的原生雷达会立刻扫到旁边货架导致急刹死锁。
-            enable_collision = is_reversing; 
-        }
-    } 
-    else if (task_type == 3) {
-        // 【指定点任务】：强制始终开启正常防撞
-        enable_collision = true;
-    } 
-    else {
-        // 【其它任务】：统统根据“是否有倒车速度”来决定是否开启
+        enable_collision = is_reversing;
+    } else {
         enable_collision = is_reversing;
     }
-    // else if () {
-    // 
-    // }
 
-    // 如果判定需要关闭防撞 (且不是debug模式)，直接返回空点云
     if (!enable_collision && !debug_mode_) {
-        // 返回空的 cloud_filtered 后，后续计算出来的最近距离将保持为绝对安全的 255.0f
         return cloud_filtered; 
     }
     // ==========================================================
@@ -319,10 +294,10 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
         max_y = is_left ? cfg.left_max_y : cfg.right_max_y;
     }
 
+    // ================== 【步骤1：过滤点云】 ==================
     for (const auto& pt : cloud_raw->points) {
-        float r = sqrt(pt.x * pt.x + pt.y * pt.y);
+        float r = sqrt(pt.x * pt.x + pt.y * pt.y + pt.z * pt.z);
 
-        // 如果不是 debug 模式，应用原点安全过滤网
         if (!debug_mode_) {
             if (cfg.r_dis_enable == 1) {
                 if (r < cfg.r_dis_min || r > cfg.r_dis_max) continue; 
@@ -347,11 +322,11 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
                 }
                 if (is_in_blind_y) continue;
             }
-        } // end of !debug_mode_
-
+        } 
         cloud_filtered->points.push_back(pt);
     }
 
+    // ================== 【步骤3：执行 TF 变换】 ==================
     TfParam tf_cfg;
     {
         std::lock_guard<std::mutex> lock(tf_mutex_);
@@ -361,6 +336,31 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
 
     return cloud_filtered;
 }
+
+// 新增函数：在最终的融合/剪裁完毕后的点云中，计算点到雷达几何原点的最小真实距离
+float TipObstacleNode::calculateMinDisToLidar(const pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, bool is_left) {
+    float min_dis = 255.0f;
+    TfParam tf_cfg;
+    {
+        // 线程安全地获取当前计算的是左雷达还是右雷达的外参原点
+        std::lock_guard<std::mutex> lock(tf_mutex_);
+        tf_cfg = is_left ? left_tf_ : right_tf_;
+    }
+
+    // cloud 当前处于 parent_frame_ (例如 velodyne) 坐标系中
+    // 所以点到雷达的真实距离，就是该点坐标减去雷达自身平移位置 (tf_cfg.x, tf_cfg.y, tf_cfg.z) 之后的欧氏距离
+    for (const auto& pt : cloud->points) {
+        float dx = pt.x - tf_cfg.x;
+        float dy = pt.y - tf_cfg.y;
+        float dz = pt.z - tf_cfg.z;
+        float r = sqrt(dx * dx + dy * dy + dz * dz);
+        if (r < min_dis) {
+            min_dis = r;
+        }
+    }
+    return min_dis;
+}
+
 
 // 核心：基于精确时间戳与防抖状态机的动态安全走廊裁剪
 void TipObstacleNode::applyCarportFilter(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, const ros::Time& stamp) {
@@ -557,34 +557,22 @@ void TipObstacleNode::publishCarportMarker() {
 void TipObstacleNode::scanCallbackSync(const sensor_msgs::LaserScan::ConstPtr &msg1,
                                        const sensor_msgs::LaserScan::ConstPtr &msg2) 
 {
-    float placeholder = 255.0f;
-    auto left_cloud = filterAndTransformCloud(*msg1, true, placeholder);
-    auto right_cloud = filterAndTransformCloud(*msg2, false, placeholder);
+    // 调用修改后的函数，仅做盲区过滤和 TF 变换，暂不计算距离
+    auto left_cloud = filterAndTransformCloud(*msg1, true);
+    auto right_cloud = filterAndTransformCloud(*msg2, false);
 
-    // 【极高精度时间戳对齐裁剪】
+    // 【极高精度时间戳对齐裁剪】在计算距离之前执行完毕！
     applyCarportFilter(left_cloud, msg1->header.stamp);
     applyCarportFilter(right_cloud, msg2->header.stamp);
 
     publishCarportMarker();
 
-    // 计算到单线雷达真正物理原点的距离
-    float final_min_dis = 255.0f;
-    TfParam l_tf, r_tf;
-    {
-        std::lock_guard<std::mutex> lock(tf_mutex_);
-        l_tf = left_tf_; r_tf = right_tf_;
-    }
+    // 【核心修复】：在经过所有的裁剪器（盲区+距离+长廊）之后，基于剩下的有效点，计算点到对应雷达的距离！
+    float min_dis_left = calculateMinDisToLidar(left_cloud, true);
+    float min_dis_right = calculateMinDisToLidar(right_cloud, false);
 
-    for (const auto& pt : left_cloud->points) {
-        float dx = pt.x - l_tf.x; float dy = pt.y - l_tf.y; float dz = pt.z - l_tf.z;
-        float r = sqrt(dx*dx + dy*dy + dz*dz); 
-        if (r < final_min_dis) final_min_dis = r;
-    }
-    for (const auto& pt : right_cloud->points) {
-        float dx = pt.x - r_tf.x; float dy = pt.y - r_tf.y; float dz = pt.z - r_tf.z;
-        float r = sqrt(dx*dx + dy*dy + dz*dz);
-        if (r < final_min_dis) final_min_dis = r;
-    }
+    // 取左右雷达的最小值作为最终输出
+    float final_min_dis = std::min(min_dis_left, min_dis_right);
 
     // 分离发布：左雷达 & 右雷达点云
     sensor_msgs::PointCloud2 leftOutMsg, rightOutMsg;
@@ -611,27 +599,18 @@ void TipObstacleNode::scanCallbackSync(const sensor_msgs::LaserScan::ConstPtr &m
     min_dis_pub_.publish(dis_msg);
 }
 
+
 void TipObstacleNode::scanCallbackSingle(const sensor_msgs::LaserScan::ConstPtr &msg) 
 {
-    float placeholder = 255.0f; 
-    auto left_cloud = filterAndTransformCloud(*msg, true, placeholder);
+    // 同理，去掉了传递引用的距离参数
+    auto left_cloud = filterAndTransformCloud(*msg, true);
 
-    // 【极高精度时间戳对齐裁剪】
+    // 裁剪点云
     applyCarportFilter(left_cloud, msg->header.stamp);
     publishCarportMarker();
 
-    float final_min_dis = 255.0f;
-    TfParam l_tf;
-    {
-        std::lock_guard<std::mutex> lock(tf_mutex_);
-        l_tf = left_tf_;
-    }
-
-    for (const auto& pt : left_cloud->points) {
-        float dx = pt.x - l_tf.x; float dy = pt.y - l_tf.y; float dz = pt.z - l_tf.z;
-        float r = sqrt(dx*dx + dy*dy + dz*dz); 
-        if (r < final_min_dis) final_min_dis = r;
-    }
+    // 在全部过滤完毕后，算出真实距离
+    float final_min_dis = calculateMinDisToLidar(left_cloud, true);
 
     // 分离发布：左雷达点云
     sensor_msgs::PointCloud2 leftOutMsg;
@@ -656,10 +635,6 @@ int main(int argc, char **argv) {
 
     TipObstacleNode node(nh, pnh);
 
-    // 替换 ros::spin(); 为异步多线程
-    ros::AsyncSpinner spinner(2); // 开启2个线程（雷达、速度、任务状态各自不阻塞）
-    spinner.start();
-    ros::waitForShutdown();
-    
+    ros::spin();
     return 0;
 }
