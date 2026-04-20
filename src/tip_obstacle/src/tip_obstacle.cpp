@@ -599,7 +599,6 @@ void TipObstacleNode::scanCallbackSync(const sensor_msgs::LaserScan::ConstPtr &m
     min_dis_pub_.publish(dis_msg);
 }
 
-
 void TipObstacleNode::scanCallbackSingle(const sensor_msgs::LaserScan::ConstPtr &msg) 
 {
     // 同理，去掉了传递引用的距离参数
