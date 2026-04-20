@@ -200,9 +200,10 @@ void TipObstacleNode::palletIdCallback(const std_msgs::Int8::ConstPtr &msg) {
 // 速度回调：只要速度小于 -0.01，就更新时间戳
 void TipObstacleNode::twistCmdCallback(const geometry_msgs::TwistStamped::ConstPtr& msg) {
     float vx = msg->twist.linear.x;
-    
+    float wz = fabs(msg->twist.angular.z);
+
     // 只要有微弱的倒车速度，立刻续命 2 秒
-    if (vx < -0.01) {
+    if (vx < -0.01 || wz > 0) {
         last_reverse_time_.store(ros::Time::now().toSec());
     } 
     // 只有当车辆明确挂入前进挡，且大脚油门开走时 (>0.2m/s)
@@ -217,8 +218,8 @@ void TipObstacleNode::feedbackStatusCallback(const autoware_remove_msgs::State::
     // 1. 实时更新当前的任务类型
     current_task_type_.store(msg->TaskInfo.type);
 
-    // 2. 只有卸货任务 (type == 1)，才去解析距离
-    if (msg->TaskInfo.type == 1) {
+    // 2. 只有卸货任务 (type == 1)，才去解析距离，增加为取卸货任务
+    if (msg->TaskInfo.type == 1 || msg->TaskInfo.type == 2 || msg->TaskInfo.type == 0) {
         float current_dis = msg->TaskInfo.site.dis;
         
         // 过滤掉上游异常的 0.0 距离
