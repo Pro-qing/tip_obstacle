@@ -59,6 +59,9 @@
         <!-- 过滤参数导入节点 -->
         <param name="debug" value="$(arg debug)" />
 
+        <param name="tf_yaml_path" value="$(arg yaml_path_tf)" />
+        <param name="carport_yaml_path" value="$(arg yaml_path_carport)" />
+
         <param name="left_filter_enable" value="$(arg left_filter_enable)" />
         <param name="left_min_angle" value="$(arg left_min_angle)" />
         <param name="left_max_angle" value="$(arg left_max_angle)" />
