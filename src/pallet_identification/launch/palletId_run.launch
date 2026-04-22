@@ -1,0 +1,17 @@
+<launch>
+
+    <arg name="distance_threshold" default="1.2" /> 
+    <arg name="angle_threshold" default="0.4" /> 
+
+
+    <node pkg="pallet_identification" type="pallet_identification" name="pallet_identification" output="screen">
+        <!-- <param name="config_file" value="$(find log_management)/params/config.yaml" /> -->
+         <param name="distance_threshold" value="$(arg distance_threshold)" />
+         <param name="angle_threshold" value="$(arg angle_threshold)" />
+    </node>   
+
+    <node pkg="pallet_identification" type="safe_tip_lift" name="safe_tip_lift" output="screen">
+        <param name="config_file" value="$(find pallet_identification)/params/config.yaml" />
+    </node>  
+
+</launch>
