@@ -13,6 +13,7 @@
     <!-- yaml文件路径 -->
     <arg name="yaml_path_tf" default="$(env HOME)/work/workspace/param/lidar_calibration.yaml" />
     <arg name="yaml_path_carport" default="$(env HOME)/work/workspace/config/perception/obstacle_detection.yaml" />
+    <arg name="yaml_path_config" default="$(env HOME)/work/workspace/config/perception/tip_obstacle.yaml" />
 <!-- 
     <arg name="yaml_path_tf" default="/home/ros_ws/workspace/param" />
     <arg name="yaml_path_carport" default="/home/ros_ws/workspace/config/perception/obstacle_detection.yaml" /> -->
@@ -61,6 +62,7 @@
 
         <param name="tf_yaml_path" value="$(arg yaml_path_tf)" />
         <param name="carport_yaml_path" value="$(arg yaml_path_carport)" />
+        <param name="config_yaml_path" value="$(arg yaml_path_config)" />
 
         <param name="left_filter_enable" value="$(arg left_filter_enable)" />
         <param name="left_min_angle" value="$(arg left_min_angle)" />
