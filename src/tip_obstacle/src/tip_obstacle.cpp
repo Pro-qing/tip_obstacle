@@ -104,6 +104,7 @@ void TipObstacleNode::loadYAML() {
             right_tf_.pitch = tf_node["bright_pitch"].as<double>(0.0);
             right_tf_.roll = tf_node["bright_roll"].as<double>(0.0);
         }
+        ROS_INFO("TipObstacle TF YAML Loaded Successfully.");
     } catch (const YAML::Exception& e) {
         ROS_ERROR("Failed to load Lidar TF YAML: %s", e.what());
     }
@@ -120,6 +121,7 @@ void TipObstacleNode::loadYAML() {
             carports_min_z_ = carport_config["carports_min_z"].as<double>();
             carports_max_z_ = carport_config["carports_max_z"].as<double>();
         }
+        ROS_INFO("TipObstacle Carport YAML Loaded Successfully.");
     } catch (const YAML::Exception& e) {
         ROS_WARN("Failed to load Carport YAML: %s", e.what());
     }
@@ -220,6 +222,7 @@ void TipObstacleNode::watchYAMLThread() {
             }
         }
     }
+    
     if (wd1 >= 0) inotify_rm_watch(fd, wd1);
     if (wd2 >= 0) inotify_rm_watch(fd, wd2);
     if (wd3 >= 0) inotify_rm_watch(fd, wd3);

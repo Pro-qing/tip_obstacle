@@ -1,30 +1,37 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(tip_obstacle)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+## 必须使用 c++14，否则 ROS Noetic 的基础头文件会报错
+add_compile_options(-std=c++14)
 
+# ==========================================
+# 1. 强制寻找并配置 PCL 1.8
+# ==========================================
+find_package(PCL 1.8 REQUIRED)
+add_definitions(${PCL_DEFINITIONS})
+link_directories(${PCL_LIBRARY_DIRS})
+
+# ==========================================
+# 2. 寻找 ROS 包
+# ==========================================
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   message_filters
   pcl_conversions
   pcl_msgs
-  pcl_ros
+  # pcl_ros
   laser_geometry
   autoware_remove_msgs
   tf
   visualization_msgs
 )
 
-# 单独引入系统库 yaml-cpp 
+# 寻找 yaml-cpp 
 find_package(yaml-cpp REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES imu_conversion
-#  CATKIN_DEPENDS pcl_conversions pcl_msgs pcl_ros roscpp sensor_msgs
-#  DEPENDS system_lib
 )
 
 ###########
@@ -32,40 +39,38 @@ catkin_package(
 ###########
 
 include_directories(
- include 
+  include 
+  ${PCL_INCLUDE_DIRS}     # 优先包含 PCL 1.8 的头文件
   ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(tip_obstacle_node src/tip_obstacle.cpp)
 
-# 确保在编译当前节点前，其他功能包的自定义消息头文件已经生成
 add_dependencies(tip_obstacle_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-# 链接库 (已经去掉了 _gencfg 的依赖)
+# 将 PCL_LIBRARIES 链接到节点
 target_link_libraries(tip_obstacle_node
   ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
   yaml-cpp
   pthread
 )
 
-###########
+#############
 ## Install ##
-###########
+#############
 
-# 拷贝头文件
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
   PATTERN ".svn" EXCLUDE
 )
 
-# 拷贝 launch 目录
 install(DIRECTORY 
     launch                  
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-# 安装可执行文件
 install(TARGETS 
   tip_obstacle_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

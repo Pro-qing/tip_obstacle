@@ -10,15 +10,17 @@
     <arg name="out_bright_points_cloud" default="bright_points_tip" />
 
     <!-- 核心：三个配置文件的路径 -->
+    <!-- 
     <arg name="yaml_path_tf" default="$(env HOME)/work/workspace/param/lidar_calibration.yaml" />
     <arg name="yaml_path_carport" default="$(env HOME)/work/workspace/config/perception/obstacle_detection.yaml" />
-    <arg name="yaml_path_config" default="$(env HOME)/work/workspace/config/perception/tip_obstacle.yaml" />
+    <arg name="yaml_path_config" default="$(env HOME)/work/workspace/config/perception/tip_obstacle.yaml" /> 
+    -->
 
-    <!-- 
-    <arg name="yaml_path_tf" default="/home/ros_ws/workspace/param" />
+    
+    <arg name="yaml_path_tf" default="/home/ros_ws/workspace/param/lidar_calibration.yaml" />
     <arg name="yaml_path_carport" default="/home/ros_ws/workspace/config/perception/obstacle_detection.yaml" /> 
     <arg name="yaml_path_config" default="/home/ros_ws/workspace/config/perception/tip_obstacle.yaml" />
-    -->
+   
 
     <arg name="debug" default="false" />
 

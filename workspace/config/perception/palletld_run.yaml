@@ -1,0 +1,15 @@
+pallet_identification:
+  distance_threshold: 1.2
+  angle_threshold: 0.4
+
+safe_tip_lift:
+  base_def_safelift: 46
+  base_pallet_safelift: 20
+  max_angle: 1.45                   # 最大角度（π/2弧度，约90度）
+  min_adjustment: 0.8               # 角度最大时的最小调整系数
+  max_adjustment: 1.0               # 角度为0时的最大调整系数
+  smoothness_factor: 2.5            # 平滑因子（用于指数方法）
+  min_safe_lift_threshold: 15       # 叉尖阈值下限
+  collision_disable_distance: 0.05  # 距离目标小于此值时，不再触发防撞机制
+  sigmoid_steepness: 10.0           # 反向S形曲线的陡峭程度
+  reciprocal_k: 0.5                 # 倒数函数的衰减控制参数
