@@ -13,6 +13,7 @@
 #include <autoware_can_msgs/CANInfo.h>
 #include <autoware_msgs/Waypoint.h>
 #include <vector>
+#include <map> // 引入 map
 
 class SafeObstacle
 {
@@ -43,14 +44,19 @@ private:
 
     geometry_msgs::TwistStamped::Ptr twist_raw_ptr_;
     autoware_can_msgs::CANInfo::Ptr can_info_ptr_;
-    bool is_narrow_channel_ = false;
+    
+    // 用 int 替代 bool，支持更多模式 (1: 常规, 2: 窄道, 3: 属性2, ...)
+    int current_mode_ = 1; 
     bool debug_mode_ = false;
 
-    // 基础多边形数据 (1为常规，2为窄道)
-    std::vector<geometry_msgs::Point> base_exigencySize_1, base_exigencySize_2;
-    std::vector<geometry_msgs::Point> base_slowSize_1, base_slowSize_2;
-    std::vector<geometry_msgs::Point> base_reverse_exigencySize_1, base_reverse_exigencySize_2;
-    std::vector<geometry_msgs::Point> base_reverse_slowSize_1, base_reverse_slowSize_2;
+    // 用于存储 Behavior ID 映射到 Mode ID 的对应关系
+    std::map<int, int> behavior_to_mode_map_;
+
+    // 基础多边形数据字典 (Key为模式ID: 1, 2, 3...)
+    std::map<int, std::vector<geometry_msgs::Point>> base_exigency_map_;
+    std::map<int, std::vector<geometry_msgs::Point>> base_slow_map_;
+    std::map<int, std::vector<geometry_msgs::Point>> base_rev_exigency_map_;
+    std::map<int, std::vector<geometry_msgs::Point>> base_rev_slow_map_;
 
     // 当前生效的多边形数据（经过缩放后）
     std::vector<geometry_msgs::Point> current_exigencySize, current_slowSize;

@@ -10,6 +10,15 @@ longitudinal_sensitivity: 0.8  # 纵向灵敏度（前后方向）
 lateral_sensitivity: 0.3       # 横向灵敏度（左右方向）
 reference_speed: 3.0           # 参考速度(m/s)
 
+# 启用尺寸方案
+enable: [1, 2, 3, 4]
+
+# 尺寸对应关系 (字典格式： 尺寸模式ID : [对应的Behavior ID列表])
+mode_mapping:
+  "1": [1, 2]
+  "2": [3, 4]
+  "3": [5, 6]
+  "4": [7, 8]
 
 # 车辆大小矩形各个点的位置(按顺序连接)（常规尺寸）
 exigencyrect_1:

@@ -29,23 +29,69 @@ SafeObstacle::SafeObstacle(ros::NodeHandle &nh, ros::NodeHandle &pnh) : nh_(nh),
         return false;
     };
 
-    // 1. 加载所有两套多边形基准
-    load_poly("exigencyrect_1", base_exigencySize_1);
-    load_poly("exigencyrect_2", base_exigencySize_2);
-    load_poly("slowrect_1", base_slowSize_1);
-    load_poly("slowrect_2", base_slowSize_2);
-    load_poly("reverse_exigencyrect_1", base_reverse_exigencySize_1);
-    load_poly("reverse_exigencyrect_2", base_reverse_exigencySize_2);
-    load_poly("reverse_slowrect_1", base_reverse_slowSize_1);
-    load_poly("reverse_slowrect_2", base_reverse_slowSize_2);
+    // 1. 读取启用的模式列表 (enable 数组)
+    std::vector<int> enabled_modes;
+    XmlRpc::XmlRpcValue enable_list;
+    if (pnh_.getParam("enable", enable_list) && enable_list.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+        for (int i = 0; i < enable_list.size(); ++i) {
+            if (enable_list[i].getType() == XmlRpc::XmlRpcValue::TypeInt) {
+                enabled_modes.push_back(static_cast<int>(enable_list[i]));
+            }
+        }
+    } else {
+        ROS_WARN("[SafeObstacle] 'enable' param not found or invalid format. Defaulting to mode [1].");
+        enabled_modes.push_back(1);
+    }
 
-    // 兜底逻辑：如果 _2 没配置，则使用 _1 的数据
-    if (base_exigencySize_2.empty()) base_exigencySize_2 = base_exigencySize_1;
-    if (base_slowSize_2.empty()) base_slowSize_2 = base_slowSize_1;
-    if (base_reverse_exigencySize_2.empty()) base_reverse_exigencySize_2 = base_reverse_exigencySize_1;
-    if (base_reverse_slowSize_2.empty()) base_reverse_slowSize_2 = base_reverse_slowSize_1;
+    // 2. 解析 Behavior ID 到 Mode 的映射关系
+    XmlRpc::XmlRpcValue mapping_dict;
+    if (pnh_.getParam("mode_mapping", mapping_dict) && mapping_dict.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
+        // 遍历 YAML 中的字典
+        for (auto const& kv : mapping_dict) {
+            int mode_id = std::stoi(kv.first); // 键是模式 ID (XMLRPC 解析字典键会自动转为 string)
+            
+            // 值是 Behavior ID 的数组
+            if (kv.second.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+                for (int i = 0; i < kv.second.size(); ++i) {
+                    if (kv.second[i].getType() == XmlRpc::XmlRpcValue::TypeInt) {
+                        int behavior_id = static_cast<int>(kv.second[i]);
+                        // 构建反向映射：Behavior ID -> Mode ID
+                        behavior_to_mode_map_[behavior_id] = mode_id; 
+                    }
+                }
+            }
+        }
+    } else {
+        ROS_WARN("[SafeObstacle] 'mode_mapping' param not found! Using hardcoded fallback.");
+        behavior_to_mode_map_[1] = 1; behavior_to_mode_map_[2] = 1;
+        behavior_to_mode_map_[3] = 2; behavior_to_mode_map_[4] = 2;
+    }
 
-    // 2. 加载动态缩放配置
+    if (debug_mode_) {
+        for (const auto& pair : behavior_to_mode_map_) {
+            ROS_INFO("[SafeObstacle] Behavior ID %d -> triggers Mode %d", pair.first, pair.second);
+        }
+    }
+
+    // 3. 动态加载多套多边形基准（只加载 enable 列表中的模式）
+    for (int mode_id : enabled_modes) {
+        std::string suffix = "_" + std::to_string(mode_id);
+        
+        load_poly("exigencyrect" + suffix, base_exigency_map_[mode_id]);
+        load_poly("slowrect" + suffix, base_slow_map_[mode_id]);
+        load_poly("reverse_exigencyrect" + suffix, base_rev_exigency_map_[mode_id]);
+        load_poly("reverse_slowrect" + suffix, base_rev_slow_map_[mode_id]);
+
+        // 兜底逻辑：如果第 i 套某一项没配置，则使用第 1 套的数据填充
+        if (mode_id > 1) {
+            if (base_exigency_map_[mode_id].empty()) base_exigency_map_[mode_id] = base_exigency_map_[1];
+            if (base_slow_map_[mode_id].empty()) base_slow_map_[mode_id] = base_slow_map_[1];
+            if (base_rev_exigency_map_[mode_id].empty()) base_rev_exigency_map_[mode_id] = base_rev_exigency_map_[1];
+            if (base_rev_slow_map_[mode_id].empty()) base_rev_slow_map_[mode_id] = base_rev_slow_map_[1];
+        }
+    }
+
+    // 4. 加载动态缩放配置
     pnh_.param("max_longitudinal_scale", max_longitudinal_scale_, 1.5);
     pnh_.param("min_longitudinal_scale", min_longitudinal_scale_, 0.7);
     pnh_.param("max_lateral_scale", max_lateral_scale_, 1.1);
@@ -54,7 +100,7 @@ SafeObstacle::SafeObstacle(ros::NodeHandle &nh, ros::NodeHandle &pnh) : nh_(nh),
     pnh_.param("lateral_sensitivity", lateral_sensitivity_, 0.3);
     pnh_.param("reference_speed", reference_speed_, 3.0);
 
-    // 3. 订阅与发布
+    // 5. 订阅与发布
     cloud_points_sub_ = nh_.subscribe("/points_filter", 1, &SafeObstacle::pointsCallback, this);
     twist_raw_sub_ = nh_.subscribe("/twist_raw", 1, &SafeObstacle::twist_raw_Callback, this);
     can_info_sub_ = nh_.subscribe("/can_info", 1, &SafeObstacle::can_info_Callback, this);
@@ -69,21 +115,39 @@ SafeObstacle::SafeObstacle(ros::NodeHandle &nh, ros::NodeHandle &pnh) : nh_(nh),
 void SafeObstacle::lqr_targetwayp_Callback(const autoware_msgs::Waypoint::ConstPtr& msg) {
     if (!msg) return;
     auto& behaviors = msg->wpsattr.routeBehavior;
-    // 判断是否进入窄道模式 (Behavior ID 3 或 4)
-    bool is_narrow = std::any_of(behaviors.begin(), behaviors.end(), [](int b) { return b == 3 || b == 4; });
-    if (is_narrow != is_narrow_channel_) {
-        is_narrow_channel_ = is_narrow;
-        if(debug_mode_) ROS_INFO("Mode Switched to: %s", is_narrow_channel_ ? "NARROW" : "NORMAL");
+    
+    // 默认回退为常规模式 1
+    int target_mode = 1; 
+
+    // 根据 yaml 中解析出的对应关系，动态查找目标模式
+    for (int b : behaviors) {
+        auto it = behavior_to_mode_map_.find(b);
+        if (it != behavior_to_mode_map_.end()) {
+            target_mode = it->second; // 找到了对应的映射关系
+        }
+    }
+
+    // 状态机发生切换时
+    if (target_mode != current_mode_) {
+        current_mode_ = target_mode;
+        if(debug_mode_) ROS_INFO("[SafeObstacle] Mode Switched to: %d", current_mode_);
     }
 }
 
 void SafeObstacle::updateDetectionZones()
 {
-    // 根据当前模式选择对应的基础框
-    const auto& b_ex = is_narrow_channel_ ? base_exigencySize_2 : base_exigencySize_1;
-    const auto& b_sl = is_narrow_channel_ ? base_slowSize_2 : base_slowSize_1;
-    const auto& b_rev_ex = is_narrow_channel_ ? base_reverse_exigencySize_2 : base_reverse_exigencySize_1;
-    const auto& b_rev_sl = is_narrow_channel_ ? base_reverse_slowSize_2 : base_reverse_slowSize_1;
+    int active_mode = current_mode_;
+    
+    // 拦截器：如果查找到的目标模式没有在 enable 中被加载，安全回退到模式 1
+    if (base_exigency_map_.find(active_mode) == base_exigency_map_.end()) {
+        active_mode = 1;
+    }
+
+    // 根据当前模式ID选择对应的基础框
+    const auto& b_ex = base_exigency_map_[active_mode];
+    const auto& b_sl = base_slow_map_[active_mode];
+    const auto& b_rev_ex = base_rev_exigency_map_[active_mode];
+    const auto& b_rev_sl = base_rev_slow_map_[active_mode];
 
     double speed = can_info_ptr_ ? fabs(can_info_ptr_->speed) : 0.0;
     double ratio = speed / reference_speed_;
@@ -100,7 +164,6 @@ void SafeObstacle::updateDetectionZones()
         out.clear();
         for (const auto& p : in) {
             geometry_msgs::Point sp;
-            // 只有朝向行驶方向的部分进行纵向缩放
             sp.x = (is_rev ? (p.x < 0 ? p.x * lon_s : p.x) : (p.x > 0 ? p.x * lon_s : p.x));
             sp.y = p.y * lat_s;
             out.push_back(sp);
@@ -145,11 +208,9 @@ void SafeObstacle::pointsCallback(const sensor_msgs::PointCloud2ConstPtr &msg)
         }
     }
 
-    // 4. 无论如何，都发布可视化检测框和当前状态（这样下游就不会出现 no msg 了）
+    // 4. 无论如何，都发布可视化检测框和当前状态
     visualization_msgs::MarkerArray markers_;
-    // 内框颜色：触发红色，未触发橙色
     std_msgs::ColorRGBA col_ex = (safeOut.data == 1) ? createColor(1,0,0,1) : createColor(1,0.5,0,1);
-    // 外框颜色：触发红色，未触发绿色
     std_msgs::ColorRGBA col_sl = (safeOut.data == 2) ? createColor(1,0,0,1) : createColor(0,1,0,1);
 
     markers_.markers.push_back(CreateMarker(active_exigency, col_ex, 0));

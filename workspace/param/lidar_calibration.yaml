@@ -2,12 +2,12 @@
 tf_calibration:
   # 位姿参数
   # 不在当前功能包中使用，预留给主雷达使用
-  main_x: 0.0
-  main_y: 0.0
-  main_z: 0.0
-  main_yaw: 0.0
-  main_pitch: 0.0
-  main_roll: 0.0  
+  x: 0.0
+  y: 0.0
+  z: 0.0
+  yaw: 0.0
+  pitch: 0.0
+  roll: 0.0  
   # 补盲雷达
   top_x: 0.19
   top_y: 0.0
