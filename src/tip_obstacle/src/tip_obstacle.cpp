@@ -138,6 +138,7 @@ void TipObstacleNode::loadYAML() {
         if (cfg["thresholds"]) {
             app_cfg_.reverse_velocity = cfg["thresholds"]["reverse_velocity"].as<double>(-0.01);
             app_cfg_.forward_velocity = cfg["thresholds"]["forward_velocity"].as<double>(0.2);
+            app_cfg_.turning_angular_threshold = cfg["thresholds"]["turning_angular_threshold"].as<double>(0.05);
             app_cfg_.valid_distance_min = cfg["thresholds"]["valid_distance_min"].as<double>(0.01);
             app_cfg_.carport_activation_dist = cfg["thresholds"]["carport_activation_dist"].as<double>(5.0);
             app_cfg_.max_detect_distance = cfg["thresholds"]["max_detect_distance"].as<float>(255.0f);
@@ -241,7 +242,8 @@ void TipObstacleNode::twistCmdCallback(const geometry_msgs::TwistStamped::ConstP
     float wz = fabs(msg->twist.angular.z);
 
     // 基于 YAML 中的速度阈值更新倒车时间戳
-    if (vx < cfg.reverse_velocity || wz > 0) {
+    // vx < reverse_velocity 表示后退（需要防撞），|wz| > 转向阈值表示转向（需要防撞）
+    if (vx < cfg.reverse_velocity || wz > cfg.turning_angular_threshold) {
         last_reverse_time_.store(ros::Time::now().toSec());
     } 
     else if (vx > cfg.forward_velocity) {

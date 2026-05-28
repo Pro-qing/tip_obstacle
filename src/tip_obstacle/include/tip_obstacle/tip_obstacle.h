@@ -54,6 +54,7 @@ struct AppConfig {
     
     double reverse_velocity = -0.01;
     double forward_velocity = 0.2;
+    double turning_angular_threshold = 0.05;
     double valid_distance_min = 0.01;
     double carport_activation_dist = 5.0;
     float max_detect_distance = 255.0f;
