@@ -241,6 +241,8 @@ void TipObstacleNode::twistCmdCallback(const geometry_msgs::TwistStamped::ConstP
     float vx = msg->twist.linear.x;
     float wz = fabs(msg->twist.angular.z);
 
+    ROS_INFO_THROTTLE(1.0, "Received TwistCmd: vx=%.3f m/s, wz=%.3f rad/s", vx, wz);
+
     // 基于 YAML 中的速度阈值更新倒车时间戳
     // vx < reverse_velocity 表示后退（需要防撞），|wz| > 转向阈值表示转向（需要防撞）
     if (vx < cfg.reverse_velocity || wz > cfg.turning_angular_threshold) {
@@ -261,7 +263,7 @@ void TipObstacleNode::feedbackStatusCallback(const autoware_remove_msgs::State::
     auto& v_types = cfg.valid_task_types;
     if (std::find(v_types.begin(), v_types.end(), msg->TaskInfo.type) != v_types.end()) {
         float current_dis = msg->TaskInfo.site.dis;
-        
+        ROS_INFO_THROTTLE(1.0, "Received FeedbackStatus: type=%d, distance=%.3f m", msg->TaskInfo.type, current_dis);
         if (current_dis > cfg.valid_distance_min) {
             dis_to_carport_.store(current_dis); 
             // 判断是否到达长廊激活距离
@@ -299,7 +301,14 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr TipObstacleNode::filterAndTransformCloud(
     bool is_reversing = (current_time - last_reverse_time_.load()) < cfg.state_timeout;
     bool enable_collision = is_reversing; 
 
+    ROS_INFO_THROTTLE(1.0, "[filterAndTransform] is_left=%d, enable_collision=%d, is_reversing=%d, "
+                      "time_diff=%.3f, last_reverse_time=%.3f, raw_points=%zu",
+                      is_left, enable_collision, is_reversing,
+                      current_time - last_reverse_time_.load(), last_reverse_time_.load(),
+                      cloud_raw->points.size());
+
     if (!enable_collision && !debug_mode_) {
+        ROS_INFO_THROTTLE(1.0, "[filterAndTransform] Collision disabled, returning empty cloud.");
         return cloud_filtered; // 返回空点云
     }
 
@@ -588,12 +597,16 @@ void TipObstacleNode::scanCallbackSync(const sensor_msgs::LaserScan::ConstPtr &m
 
 void TipObstacleNode::scanCallbackSingle(const sensor_msgs::LaserScan::ConstPtr &msg) 
 {
+    ROS_INFO_THROTTLE(1.0, "[scanCallbackSingle] Received scan, ranges_size=%zu", msg->ranges.size());
     auto left_cloud = filterAndTransformCloud(*msg, true);
+    ROS_INFO_THROTTLE(1.0, "[scanCallbackSingle] After filter: cloud_size=%zu", left_cloud->points.size());
 
     applyCarportFilter(left_cloud, msg->header.stamp);
     publishCarportMarker();
 
     float final_min_dis = calculateMinDisToLidar(left_cloud, true);
+
+    ROS_INFO_THROTTLE(1.0, "[scanCallbackSingle] Final: cloud_size=%zu, min_dis=%.3f", left_cloud->points.size(), final_min_dis);
 
     sensor_msgs::PointCloud2 leftOutMsg;
     pcl::toROSMsg(*left_cloud, leftOutMsg);
