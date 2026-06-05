@@ -25,6 +25,9 @@ visualization:
   marker_color_g: 1.0
   marker_color_b: 0.0
   marker_color_a: 1.0
+  visibility_marker_enable: 1        # 1:开启可视区域显示 0:关闭
+  visibility_ref_distance: 0.5       # 可视区域扇形参考距离(m)
+  tf_broadcast_enable: 0             # 1:开启TF广播 0:关闭TF广播
 
 # ==========================================
 # 3. 盲区过滤配置 (1:开启 0:关闭)
