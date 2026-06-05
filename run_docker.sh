@@ -13,8 +13,8 @@ docker run -it \
     --name="tip_obstacle_Dev" \
     --env="DISPLAY=$DISPLAY" \
     --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-    --volume="$SCRIPT_DIR/src:/home/ros_ws/src" \
-    --volume="$SCRIPT_DIR/workspace:/home/ros_ws/workspace" \
+    --volume="$SCRIPT_DIR/src:/home/autoware/work/autoware.ai/src" \
+    --volume="$SCRIPT_DIR/workspace:/home/autoware/work/workspace" \
     --net=host \
     --privileged \
     tip_obstacle_img
