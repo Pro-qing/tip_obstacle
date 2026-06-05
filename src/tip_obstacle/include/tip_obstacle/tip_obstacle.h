@@ -67,6 +67,10 @@ struct AppConfig {
     double marker_color_b = 0.0;
     double marker_color_a = 1.0;
 
+    int visibility_marker_enable = 0;
+    double visibility_ref_distance = 0.5;
+    int tf_broadcast_enable = 1;
+
     FilterParam normal_filter;
     FilterParam pallet_filter;
 };
@@ -93,12 +97,13 @@ private:
     void feedbackStatusCallback(const autoware_remove_msgs::State::ConstPtr& msg);
     void applyCarportFilter(pcl::PointCloud<pcl::PointXYZI>::Ptr& cloud, const ros::Time& stamp);
     void publishCarportMarker();
+    void publishVisibilityMarker();
 
     ros::NodeHandle nh_, pnh_;
     
     // Publishers & Subscribers
     ros::Publisher pc_fused_pub_, pc_left_pub_, pc_right_pub_;
-    ros::Publisher min_dis_pub_, carport_marker_pub_;
+    ros::Publisher min_dis_pub_, carport_marker_pub_, visibility_marker_pub_;
     ros::Subscriber pallet_id_sub_, single_scan_sub_;
     ros::Subscriber twist_cmd_sub_, feedback_status_sub_;
 
@@ -116,6 +121,7 @@ private:
     int tip_type_;
     bool debug_mode_;
     std::string parent_frame_, left_child_frame_, right_child_frame_, base_link_frame_;
+    std::string left_scan_frame_, right_scan_frame_;
     
     // 三个核心 YAML 文件路径
     std::string tf_yaml_path_;

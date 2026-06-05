@@ -22,6 +22,8 @@ TipObstacleNode::TipObstacleNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
     pnh_.param<std::string>("parent_frame", parent_frame_, "velodyne");
     pnh_.param<std::string>("left_child_frame", left_child_frame_, "bleft_laser");
     pnh_.param<std::string>("right_child_frame", right_child_frame_, "bright_laser");
+    pnh_.param<std::string>("left_scan_frame", left_scan_frame_, "scan_bleft_link");
+    pnh_.param<std::string>("right_scan_frame", right_scan_frame_, "scan_bright_link");
 
     std::string out_fused_pc, out_left_pc, out_right_pc;
     pnh_.param<std::string>("out_fused_points_cloud", out_fused_pc, "fused_points_tip");
@@ -47,6 +49,7 @@ TipObstacleNode::TipObstacleNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
     twist_cmd_sub_ = nh_.subscribe("/twist_cmd", 10, &TipObstacleNode::twistCmdCallback, this);
     feedback_status_sub_ = nh_.subscribe("/feedback_status", 10, &TipObstacleNode::feedbackStatusCallback, this);
     carport_marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("carport", 1, true);
+    visibility_marker_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("visibility_region", 1, true);
 
     if (tip_type_ == 0) {
         sub_scan_left_.reset(new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_, "/scan_bleft", 1, ros::TransportHints().tcpNoDelay()));
@@ -57,8 +60,18 @@ TipObstacleNode::TipObstacleNode(ros::NodeHandle& nh, ros::NodeHandle& pnh)
         single_scan_sub_ = nh_.subscribe("/scan_bleft", 10, &TipObstacleNode::scanCallbackSingle, this);
     }
 
-    // 5. 定时发布 TF 外参
+    // 5. 定时发布 TF 外参 (受 tf_broadcast_enable 开关控制)
+    {
+        AppConfig cfg;
+        { std::lock_guard<std::mutex> lock(cfg_mutex_); cfg = app_cfg_; }
+        if (!cfg.tf_broadcast_enable) {
+            ROS_INFO("TF broadcast is DISABLED by config.");
+        }
+    }
     tf_timer_ = nh_.createTimer(ros::Duration(0.1), [this](const ros::TimerEvent&) {
+        AppConfig cfg;
+        { std::lock_guard<std::mutex> lock(cfg_mutex_); cfg = app_cfg_; }
+        if (!cfg.tf_broadcast_enable) return;
         std::lock_guard<std::mutex> lock(tf_mutex_);
         ros::Time now = ros::Time::now();
 
@@ -84,12 +97,35 @@ TipObstacleNode::~TipObstacleNode() {
 }
 
 void TipObstacleNode::loadYAML() {
-    // 1. 读取雷达外参 TF
+    // 1. 读取雷达外参 TF (支持 calibration.bleft.x 和 tf_calibration.bleft_x 两种格式)
     try {
         YAML::Node config = YAML::LoadFile(tf_yaml_path_);
-        if (config["tf_calibration"]) {
+        std::lock_guard<std::mutex> lock(tf_mutex_);
+
+        if (config["calibration"]) {
+            // 新格式: calibration.bleft.x / calibration.bright.x
+            auto cal_node = config["calibration"];
+            if (cal_node["bleft"]) {
+                auto bl = cal_node["bleft"];
+                left_tf_.x = bl["x"].as<double>(0.0);
+                left_tf_.y = bl["y"].as<double>(0.0);
+                left_tf_.z = bl["z"].as<double>(0.0);
+                left_tf_.roll = bl["roll"].as<double>(0.0);
+                left_tf_.pitch = bl["pitch"].as<double>(0.0);
+                left_tf_.yaw = bl["yaw"].as<double>(0.0);
+            }
+            if (cal_node["bright"]) {
+                auto br = cal_node["bright"];
+                right_tf_.x = br["x"].as<double>(0.0);
+                right_tf_.y = br["y"].as<double>(0.0);
+                right_tf_.z = br["z"].as<double>(0.0);
+                right_tf_.roll = br["roll"].as<double>(0.0);
+                right_tf_.pitch = br["pitch"].as<double>(0.0);
+                right_tf_.yaw = br["yaw"].as<double>(0.0);
+            }
+        } else if (config["tf_calibration"]) {
+            // 旧格式: tf_calibration.bleft_x
             auto tf_node = config["tf_calibration"];
-            std::lock_guard<std::mutex> lock(tf_mutex_);
             left_tf_.x = tf_node["bleft_x"].as<double>(0.0);
             left_tf_.y = tf_node["bleft_y"].as<double>(0.0);
             left_tf_.z = tf_node["bleft_z"].as<double>(0.0);
@@ -152,6 +188,9 @@ void TipObstacleNode::loadYAML() {
             app_cfg_.marker_color_g = cfg["visualization"]["marker_color_g"].as<double>(1.0);
             app_cfg_.marker_color_b = cfg["visualization"]["marker_color_b"].as<double>(0.0);
             app_cfg_.marker_color_a = cfg["visualization"]["marker_color_a"].as<double>(1.0);
+            app_cfg_.visibility_marker_enable = cfg["visualization"]["visibility_marker_enable"].as<int>(0);
+            app_cfg_.visibility_ref_distance = cfg["visualization"]["visibility_ref_distance"].as<double>(0.5);
+            app_cfg_.tf_broadcast_enable = cfg["visualization"]["tf_broadcast_enable"].as<int>(1);
         }
         if (cfg["normal_filter"]) {
             auto nf = cfg["normal_filter"];
@@ -471,6 +510,179 @@ void TipObstacleNode::applyCarportFilter(pcl::PointCloud<pcl::PointXYZI>::Ptr& c
     }
 }
 
+void TipObstacleNode::publishVisibilityMarker() {
+    AppConfig cfg;
+    { std::lock_guard<std::mutex> lock(cfg_mutex_); cfg = app_cfg_; }
+
+    if (!cfg.visibility_marker_enable) return;
+
+    visualization_msgs::MarkerArray marker_array;
+
+    // 根据托盘状态选择对应的过滤参数
+    struct VisParam {
+        int filter_enable;
+        double min_angle, max_angle;   // 盲区角度范围 [0, 360)
+        double min_y, max_y;           // 盲区 Y 轴范围
+    };
+
+    auto getVisParam = [&](bool is_left) -> VisParam {
+        VisParam vp;
+        if (pallet_id_state_ > 0) {
+            vp.filter_enable = is_left ? cfg.pallet_filter.left_filter_enable : cfg.pallet_filter.right_filter_enable;
+            vp.min_angle     = is_left ? cfg.pallet_filter.left_min_angle : cfg.pallet_filter.right_min_angle;
+            vp.max_angle     = is_left ? cfg.pallet_filter.left_max_angle : cfg.pallet_filter.right_max_angle;
+            vp.min_y         = is_left ? cfg.pallet_filter.left_min_y : cfg.pallet_filter.right_min_y;
+            vp.max_y         = is_left ? cfg.pallet_filter.left_max_y : cfg.pallet_filter.right_max_y;
+        } else {
+            vp.filter_enable = is_left ? cfg.normal_filter.left_filter_enable : cfg.normal_filter.right_filter_enable;
+            vp.min_angle     = is_left ? cfg.normal_filter.left_min_angle : cfg.normal_filter.right_min_angle;
+            vp.max_angle     = is_left ? cfg.normal_filter.left_max_angle : cfg.normal_filter.right_max_angle;
+            vp.min_y         = is_left ? cfg.normal_filter.left_min_y : cfg.normal_filter.right_min_y;
+            vp.max_y         = is_left ? cfg.normal_filter.left_max_y : cfg.normal_filter.right_max_y;
+        }
+        return vp;
+    };
+
+    double ref_dist = cfg.visibility_ref_distance;
+    int marker_id = 0;
+
+    // 为每个雷达生成可视区域 Marker
+    // 使用 tf_listener 查找 map→scan_frame 的变换，将 Marker 发布到 map 坐标系
+    auto publishForLidar = [&](bool is_left, const TfParam& tf_cfg, const std::string& scan_frame) {
+        VisParam vp = getVisParam(is_left);
+        if (!vp.filter_enable) return;
+
+        // 查找 map → scan_frame 的变换
+        tf::StampedTransform map_to_scan;
+        try {
+            tf_listener_.waitForTransform("map", scan_frame, ros::Time(0), ros::Duration(0.1));
+            tf_listener_.lookupTransform("map", scan_frame, ros::Time(0), map_to_scan);
+        } catch (tf::TransformException &ex) {
+            ROS_WARN_THROTTLE(2.0, "Visibility Marker TF lookup failed [%s]: %s", scan_frame.c_str(), ex.what());
+            return;
+        }
+
+        // 构造变换矩阵
+        Eigen::Affine3f tf_map_to_scan = Eigen::Affine3f::Identity();
+        tf_map_to_scan.translation() << map_to_scan.getOrigin().x(),
+                                        map_to_scan.getOrigin().y(),
+                                        map_to_scan.getOrigin().z();
+        tf::Quaternion q = map_to_scan.getRotation();
+        Eigen::Quaternionf eigen_q(q.w(), q.x(), q.y(), q.z());
+        tf_map_to_scan.rotate(eigen_q);
+
+        visualization_msgs::Marker marker;
+        marker.header.frame_id = "map";
+        marker.header.stamp = ros::Time::now();
+        marker.ns = is_left ? "visibility_left" : "visibility_right";
+        marker.id = marker_id++;
+        marker.type = visualization_msgs::Marker::LINE_LIST;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.pose.orientation.w = 1.0;
+        marker.scale.x = cfg.marker_line_width;
+        // 可视区域使用半透明蓝色，与库位走廊的绿色区分
+        marker.color.r = 0.0;
+        marker.color.g = 0.5;
+        marker.color.b = 1.0;
+        marker.color.a = 0.6;
+
+        // 盲区角度 [min_angle, max_angle]，可视区域为其补集
+        // 可视区域边界线: 沿 min_angle 和 max_angle 方向各画一条径向线
+        // 需要考虑环绕情况: 当 min_angle > max_angle 时盲区跨 0°/360°
+        // 此时可视区域为 [max_angle, min_angle] (不跨 0°)
+        // 当 min_angle <= max_angle 时，可视区域为 [0, min_angle] ∪ [max_angle, 360)
+
+        // 定义辅助函数: 角度 → map 坐标系下的 2D 点
+        auto angleToPoint = [&](double angle_deg) -> geometry_msgs::Point {
+            double angle_rad = angle_deg * M_PI / 180.0;
+            // 雷达局部坐标系下的点
+            Eigen::Vector3f local_pt(ref_dist * cos(angle_rad), ref_dist * sin(angle_rad), 0.0);
+            // 变换到 map 坐标系
+            Eigen::Vector3f map_pt = tf_map_to_scan * local_pt;
+            geometry_msgs::Point p;
+            p.x = map_pt.x();
+            p.y = map_pt.y();
+            p.z = map_pt.z();
+            return p;
+        };
+
+        // 原点 (雷达在 map 坐标系下的位置)
+        Eigen::Vector3f origin_eigen = tf_map_to_scan * Eigen::Vector3f(0.0, 0.0, 0.0);
+        geometry_msgs::Point origin;
+        origin.x = origin_eigen.x();
+        origin.y = origin_eigen.y();
+        origin.z = origin_eigen.z();
+
+        // 计算可视角度区间并绘制径向线和弧线
+        // 弧线用若干线段近似
+        const int arc_segments = 8;
+
+        auto addArcAndRays = [&](double vis_start_deg, double vis_end_deg) {
+            if (vis_start_deg >= vis_end_deg) return;
+
+            // 两条径向线 (从原点到 ref_dist)
+            geometry_msgs::Point ps = angleToPoint(vis_start_deg);
+            geometry_msgs::Point pe = angleToPoint(vis_end_deg);
+
+            marker.points.push_back(origin);
+            marker.points.push_back(ps);
+
+            marker.points.push_back(origin);
+            marker.points.push_back(pe);
+
+            // 弧线 (从 start 到 end)
+            for (int i = 0; i < arc_segments; ++i) {
+                double a1 = vis_start_deg + (vis_end_deg - vis_start_deg) * i / arc_segments;
+                double a2 = vis_start_deg + (vis_end_deg - vis_start_deg) * (i + 1) / arc_segments;
+                marker.points.push_back(angleToPoint(a1));
+                marker.points.push_back(angleToPoint(a2));
+            }
+        };
+
+        if (vp.min_angle > vp.max_angle) {
+            // 盲区跨 0°: [min_angle, 360) ∪ [0, max_angle]
+            // 可视区域: [max_angle, min_angle]
+            addArcAndRays(vp.max_angle, vp.min_angle);
+        } else {
+            // 盲区: [min_angle, max_angle]
+            // 可视区域: [0, min_angle] ∪ [max_angle, 360)
+            addArcAndRays(0.0, vp.min_angle);
+            addArcAndRays(vp.max_angle, 360.0);
+        }
+
+        // Y 轴边界线: 沿 y=min_y 和 y=max_y 画水平线段
+        // 只在 Y 轴过滤开启 (min_y != max_y) 时绘制
+        if (fabs(vp.min_y - vp.max_y) > 1e-6) {
+            for (double y_val : {vp.min_y, vp.max_y}) {
+                Eigen::Vector3f local_p1(0.0, y_val, 0.0);
+                Eigen::Vector3f local_p2(ref_dist, y_val, 0.0);
+                Eigen::Vector3f map_p1 = tf_map_to_scan * local_p1;
+                Eigen::Vector3f map_p2 = tf_map_to_scan * local_p2;
+                geometry_msgs::Point p1, p2;
+                p1.x = map_p1.x(); p1.y = map_p1.y(); p1.z = map_p1.z();
+                p2.x = map_p2.x(); p2.y = map_p2.y(); p2.z = map_p2.z();
+                marker.points.push_back(p1);
+                marker.points.push_back(p2);
+            }
+        }
+
+        if (!marker.points.empty()) {
+            marker_array.markers.push_back(marker);
+        }
+    };
+
+    {
+        publishForLidar(true, left_tf_, left_scan_frame_);
+        if (tip_type_ == 0) {
+            publishForLidar(false, right_tf_, right_scan_frame_);
+        }
+    }
+
+    if (!marker_array.markers.empty()) {
+        visibility_marker_pub_.publish(marker_array);
+    }
+}
+
 void TipObstacleNode::publishCarportMarker() {
     AppConfig cfg;
     { std::lock_guard<std::mutex> lock(cfg_mutex_); cfg = app_cfg_; }
@@ -567,6 +779,7 @@ void TipObstacleNode::scanCallbackSync(const sensor_msgs::LaserScan::ConstPtr &m
     applyCarportFilter(right_cloud, msg2->header.stamp);
 
     publishCarportMarker();
+    publishVisibilityMarker();
 
     float min_dis_left = calculateMinDisToLidar(left_cloud, true);
     float min_dis_right = calculateMinDisToLidar(right_cloud, false);
@@ -603,6 +816,7 @@ void TipObstacleNode::scanCallbackSingle(const sensor_msgs::LaserScan::ConstPtr 
 
     applyCarportFilter(left_cloud, msg->header.stamp);
     publishCarportMarker();
+    publishVisibilityMarker();
 
     float final_min_dis = calculateMinDisToLidar(left_cloud, true);
 
